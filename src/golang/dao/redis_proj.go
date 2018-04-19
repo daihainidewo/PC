@@ -11,7 +11,7 @@ type RedisCacheImp struct {
 	client *redis.Client
 }
 
-func NewProjRedis(addr, passwd string, db int) *RedisCacheImp {
+func NewRedisCache(addr, passwd string, db int) *RedisCacheImp {
 	client := new(RedisCacheImp)
 	client.client = redis.NewClient(&redis.Options{
 		Addr:     addr,

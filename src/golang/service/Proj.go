@@ -19,7 +19,7 @@ func NewProjService() *ProjServiceImp {
 }
 
 // 通过获取redis和mysql的数据启动爬虫程序
-func (this *ProjServiceImp) StartNextPC() error {
+func (this *ProjServiceImp) startNextPC() error {
 	// redis中获取排队数据
 	redikey := utils.GetWaitPCQueueKey()
 	pcbody, err := dao.RedisCacheDao.GetPCBodyMsg(redikey)
@@ -33,8 +33,8 @@ func (this *ProjServiceImp) StartNextPC() error {
 	}
 	if len(pcbs.PageTitleList2Slice) == 0 {
 		utils.PageTitleList = list.New()
-		proj.StartPC(pcbs.URL, pcbs.Keyword, pcbs.Site, pcbs.Token, pcbody.Userid, pcbs.TitleKeyWord)
-		return err
+		proj.PCService.StartPC(pcbs.URL, pcbs.Keyword, pcbs.Site, pcbs.Token, pcbody.Userid, pcbs.TitleKeyWord)
+		return nil
 	}
 	// 载入内存
 	for _, l := range pcbs.PageTitleList2Slice {
@@ -44,7 +44,7 @@ func (this *ProjServiceImp) StartNextPC() error {
 	// 启动爬虫
 	pcbs.URL = pcbs.PageTitleList2Slice[0]
 	utils.PageTitleList.Remove(utils.PageTitleList.Front())
-	proj.StartPC(pcbs.URL, pcbs.Keyword, pcbs.Site, pcbs.Token, pcbody.Userid, pcbs.TitleKeyWord)
+	proj.PCService.StartPC(pcbs.URL, pcbs.Keyword, pcbs.Site, pcbs.Token, pcbody.Userid, pcbs.TitleKeyWord)
 	return nil
 }
 
@@ -63,4 +63,17 @@ func (this *ProjServiceImp) SetPCBody(userid string, value *entity.PCBreakStruct
 	redikey := utils.GetWaitPCQueueKey()
 	err = dao.RedisCacheDao.SetPCBodyMsg(redikey, pcbody)
 	return err
+}
+
+func (this *ProjServiceImp) CtrlPC() {
+
+	for {
+		// 准备下一个爬虫
+		err := this.startNextPC()
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+	}
+
 }

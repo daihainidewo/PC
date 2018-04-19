@@ -11,7 +11,6 @@ import (
 	"time"
 	"sync"
 	"golang/entity"
-	"golang/dao"
 )
 
 type PC struct {
@@ -240,16 +239,16 @@ func (this *PC) StartPC(url, keyword, site, token, userid string, titleKeyword [
 }
 
 // 切换爬虫
-func (this *PC) CutovePC() {
-	// 从redis中获取现在需要爬取的相关信息
-	key := utils.GetWaitPCQueueKey()
-	val := dao.RedisCacheDao.GetPCBody(key)
-	if val == "" {
-		CutovePC()
-	}
-	// 调用爬取程序
-
-	// 存放当前信息去redis排队
-
-	// 存放相关信息去mysql
-}
+//func (this *PC) CutovePC() {
+//	// 从redis中获取现在需要爬取的相关信息
+//	key := utils.GetWaitPCQueueKey()
+//	val := dao.RedisCacheDao.GetPCBody(key)
+//	if val == "" {
+//		CutovePC()
+//	}
+//	// 调用爬取程序
+//
+//	// 存放当前信息去redis排队
+//
+//	// 存放相关信息去mysql
+//}

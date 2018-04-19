@@ -11,8 +11,6 @@ type IRedisCacheDao interface {
 var RedisCacheDao IRedisCacheDao
 
 type IMysqlWWWDao interface {
-	SetPCBody(userid, value string) (int64, error)
-	GetPCBody() ([][]string, error)
 	SetUserSubMsg(idkey, value string) (int64, error)
 	GetUserSubMsg(userid string) (string, error)
 	SetSubUserMsg(submsg, userids string) (int64, error)

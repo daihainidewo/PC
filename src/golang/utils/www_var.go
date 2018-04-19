@@ -9,3 +9,5 @@ const (
 
 var HtmlPath string        // 静态网页代码存放地
 var Htmlcookie *HtmlCookie // 网页cookie
+
+

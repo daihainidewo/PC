@@ -9,7 +9,7 @@ import (
 
 type WWWServiceImp struct{}
 
-func NewWWWServiceImp() *WWWServiceImp {
+func NewWWWService() *WWWServiceImp {
 	return new(WWWServiceImp)
 }
 
@@ -27,6 +27,7 @@ func (this *WWWServiceImp) SetUserSubMsg(userid, suburl, keyword, site, token st
 		TitleKeyWord: titlekeyword,
 		Site:         site,
 	}
+
 	submsg := new([]entity.User2SubStruct)
 	if val != "" {
 		err := json.Unmarshal([]byte(val), submsg)
@@ -59,6 +60,19 @@ func (this *WWWServiceImp) GetUserSubMsg(userid string) (*[]entity.User2SubStruc
 
 // 通过订阅信息设置订阅用户
 
-func (this *WWWServiceImp) GetPCBody(userid, timesp string)  {
-	
+// 设置爬虫信息
+func (this *WWWServiceImp) SetPCBody(userid, suburl, keyword, site, token string, titlekeyword []string) error {
+	val := new(entity.PCBreakStruct)
+	val.TitleKeyWord = titlekeyword
+	val.Token = token
+	val.Site = site
+	val.URL = suburl
+	val.Keyword = keyword
+	val.PageTitleMap = make(map[string]string)
+	val.PageTitleList2Slice = make([]string, 0)
+	err := ProjService.SetPCBody(userid, val)
+	if err != nil {
+		return err
+	}
+	return nil
 }

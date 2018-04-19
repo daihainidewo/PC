@@ -5,8 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/Go-SQL-Driver/MySQL"
-	"golang/entity"
-	"golang/utils"
 )
 
 type MysqlWWWClientImp struct {

@@ -69,7 +69,7 @@ func (this *MysqlProjClientImp) doQuery(sql string, args ...interface{}) ([][]in
 }
 
 // 设置爬取队列的信息
-func (this *MysqlProjClientImp) SetPCBody(userid_timest, value *entity.PCBreakStruct) (int64, error) {
+func (this *MysqlProjClientImp) SetPCBody(userid_timest string, value *entity.PCBreakStruct) (int64, error) {
 	val, err := json.Marshal(value)
 	if err != nil {
 		return -1, err

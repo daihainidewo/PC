@@ -87,6 +87,7 @@ func userSub(w http.ResponseWriter, r *http.Request) {
 	suburl := r.Form.Get("suburl")
 	keyword := r.Form.Get("keyword")
 	token := r.Form.Get("token")
+	site := r.Form.Get("site")
 	titlekw := r.Form.Get("titlekeyword")
 	if userid == "" || suburl == "" || keyword == "" {
 		res := utils.RespJson(utils.INVALID_PARAMS, utils.RespMsg[utils.INVALID_PARAMS], "")
@@ -94,7 +95,7 @@ func userSub(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	titlekeyword := strings.Split(titlekw, ",")
-	err := service.WWWService.SetUserSubMsg(userid, suburl, keyword, token, titlekeyword)
+	err := service.WWWService.SetUserSubMsg(userid, suburl, keyword, site, token, titlekeyword)
 	if err != nil {
 		if err != nil {
 			res := utils.RespJson(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "")
