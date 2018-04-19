@@ -1,5 +1,5 @@
 // file create by daihao, time is 2018/4/8 11:19
-package main
+package proj
 
 import (
 	"testing"
@@ -23,8 +23,8 @@ func startPC() {
 	utils.PageLimitScanNum = utils.NewTokenBucket(1000)          // 生产者
 	utils.PageSM = new(sync.Mutex)
 	utils.PageTitleList = list.New()
-	utils.UserSubMap = make(map[int][]entity.UserSubStruct)
-	utils.SubUserMap = make(map[entity.UserSubStruct][]int)
+	utils.UserSubMap = make(map[string][]entity.UserSubStruct)
+	utils.SubUserMap = make(map[entity.UserSubStruct][]string)
 	fmt.Println("pro chan", utils.PageLimitProNum.Len(), "scan chan", utils.PageLimitScanNum.Len())
 	go func() {
 		for {
@@ -256,12 +256,12 @@ func TestDownloadHtml(t *testing.T) {
 
 func TestStartPC(t *testing.T) {
 	startPC()
-	url := "https://blog.csdn.net/u013451157/article/list/2" // 搜索起始url
-	keyword := ""                                            // 全文搜索关键字
-	token := "blog.csdn.net/u013451157/"                     // 控制网站搜索域
-	userid := 123                                            // 用户id
-	site := "https://blog.csdn.net"                          // 搜索站点
-	titleKeyword := make([]string, 0)                        // 标题关键字
+	url := "https://sustyuxiao.github.io/"  // 搜索起始url
+	keyword := ""                           // 全文搜索关键字
+	token := "sustyuxiao.github.io"         // 控制网站搜索域
+	userid := 123                           // 用户id
+	site := "https://sustyuxiao.github.io/" // 搜索站点
+	titleKeyword := make([]string, 0)       // 标题关键字
 	//titleKeyword = append(titleKeyword, "c++")
 	//titleKeyword = append(titleKeyword, "面经")
 	keyword = strings.ToLower(keyword)

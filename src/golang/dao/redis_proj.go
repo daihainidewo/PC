@@ -3,31 +3,44 @@ package dao
 
 import (
 	"github.com/go-redis/redis"
-	"fmt"
+	"golang/entity"
+	"encoding/json"
 )
 
 type RedisCacheImp struct {
 	client *redis.Client
 }
 
-func NewProjRedis(opt string) *RedisCacheImp {
+func NewProjRedis(addr, passwd string, db int) *RedisCacheImp {
 	client := new(RedisCacheImp)
 	client.client = redis.NewClient(&redis.Options{
-		Addr:     "127.0.0.1:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
+		Addr:     addr,
+		Password: passwd, // no password set
+		DB:       db,     // use default DB
 	})
 	return client
 }
 
-func (this *RedisCacheImp) GetPCBody(key string) string {
-	ret, err := this.client.LPop(key).Result()
+/*
+存放获取相关数据至redis进行爬虫爬取排队：
+key : 需要操作的键（redis队列的键）
+val : 存放排队信息
+*/
+// 获取爬虫的主体信息
+func (this *RedisCacheImp) GetPCBodyMsg(key string) (*entity.PCQueueStruct, error) {
+	ret := new(entity.PCQueueStruct)
+	val, err := this.client.LPop(key).Result() // 只返回
 	if err != nil {
-		fmt.Println(err)
+		return nil, err
 	}
-	return ret
+	return ret, json.Unmarshal([]byte(val), ret)
 }
 
-func (this *RedisCacheImp) SetPCBody(key, val string) error {
-	return this.client.RPush(key, val).Err()
+// 设置爬虫的主体信息
+func (this *RedisCacheImp) SetPCBodyMsg(key string, val *entity.PCQueueStruct) error {
+	ret, err := json.Marshal(val)
+	if err != nil {
+		return err
+	}
+	return this.client.RPush(key, string(ret)).Err()
 }

@@ -5,21 +5,23 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/Go-SQL-Driver/MySQL"
+	"golang/entity"
+	"golang/utils"
 )
 
-type MysqlClientImp struct {
+type MysqlWWWClientImp struct {
 	client *sql.DB
 }
 
-func NewWWWMysqlClient(driverName, dataSourceName string) *MysqlClientImp {
+func NewWWWMysqlClient(driverName, dataSourceName string) *MysqlWWWClientImp {
 	db, err := sql.Open(driverName, dataSourceName)
 	if err != nil {
 		return nil
 	}
-	return &MysqlClientImp{client: db}
+	return &MysqlWWWClientImp{client: db}
 }
 
-func (this *MysqlClientImp) doSQL(sql string, args ...interface{}) (sql.Result, error) {
+func (this *MysqlWWWClientImp) doSQL(sql string, args ...interface{}) (sql.Result, error) {
 	stmt, e := this.client.Prepare(sql)
 	if e != nil {
 		return nil, e
@@ -31,11 +33,7 @@ func (this *MysqlClientImp) doSQL(sql string, args ...interface{}) (sql.Result, 
 	return res, nil
 }
 
-func (this *MysqlClientImp) doQuery(sql string, args ...interface{}) ([][]interface{}, error) {
-	//stmt, err := this.client.Prepare(sql)
-	//if err != nil {
-	//	return nil, err
-	//}
+func (this *MysqlWWWClientImp) doQuery(sql string, args ...interface{}) ([][]interface{}, error) {
 	rows, err := this.client.Query(sql, args...)
 	if err != nil {
 		return nil, err
@@ -70,37 +68,10 @@ func (this *MysqlClientImp) doQuery(sql string, args ...interface{}) ([][]interf
 	return ret, nil
 }
 
-// 设置爬取队列的信息
-func (this *MysqlClientImp) SetPCBody(userid, value string) (int64, error) {
-	sql := `INSERT INTO pc_body_msg (pc_body_msg_user_id, pc_body_msg_body) VALUES(?,?)`
-	res, err := this.doSQL(sql, userid, value)
-	if err != nil {
-		return -1, err
-	}
-	return res.RowsAffected()
-}
-
-// 提取爬取队列的信息
-func (this *MysqlClientImp) GetPCBody() ([][]string, error) {
-	ret := make([][]string, 0)
-	temp := make([]string, 2)
-	sql := `SELECT pc_body_msg_user_id,pc_body_msg_body FROM pachong.pc_body_msg`
-	res, err := this.doQuery(sql)
-	if err != nil {
-		return nil, err
-	}
-	for _, r := range res {
-		temp[0], temp[1] = string(r[0].([]byte)), string(r[1].([]byte))
-		ret = append(ret, temp)
-	}
-
-	return ret, nil
-}
-
 // 设置用户订阅
-func (this *MysqlClientImp) SetUserSubMsg(userid, value string) (int64, error) {
+func (this *MysqlWWWClientImp) SetUserSubMsg(idkey, value string) (int64, error) {
 	sql := `insert into user_sub (user_sub_user_id, user_sub_sub_msg) value (?, ?)`
-	res, err := this.doSQL(sql, userid, value)
+	res, err := this.doSQL(sql, idkey, value)
 	if err != nil {
 		return -1, err
 	}
@@ -108,7 +79,7 @@ func (this *MysqlClientImp) SetUserSubMsg(userid, value string) (int64, error) {
 }
 
 // 获取用户订阅
-func (this *MysqlClientImp) GetUserSubMsg(userid string) (string, error) {
+func (this *MysqlWWWClientImp) GetUserSubMsg(userid string) (string, error) {
 	sql := fmt.Sprintf(`SELECT user_sub_sub_msg FROM pachong.user_sub where user_sub_user_id=%s`, userid)
 	res, err := this.doQuery(sql)
 	if err != nil {
@@ -123,7 +94,7 @@ func (this *MysqlClientImp) GetUserSubMsg(userid string) (string, error) {
 }
 
 // 设置该订阅有哪些用户
-func (this *MysqlClientImp) SetSubUserMsg(submsg, userids string) (int64, error) {
+func (this *MysqlWWWClientImp) SetSubUserMsg(submsg, userids string) (int64, error) {
 	sql := `insert into pc_sub_user (pc_sub_user_sub, pc_sub_user_ids) values (?,?)`
 	res, err := this.doSQL(sql, submsg, userids)
 	if err != nil {
@@ -133,7 +104,7 @@ func (this *MysqlClientImp) SetSubUserMsg(submsg, userids string) (int64, error)
 }
 
 // 获取该订阅有哪些用些
-func (this *MysqlClientImp) GetSubUserMsg(submsg string) (string, error) {
+func (this *MysqlWWWClientImp) GetSubUserMsg(submsg string) (string, error) {
 	sql := `select pc_sub_user_ids from pachong.pc_sub_user where pc_sub_user_sub=?`
 	res, err := this.doQuery(sql, submsg)
 	if err != nil {
@@ -148,6 +119,6 @@ func (this *MysqlClientImp) GetSubUserMsg(submsg string) (string, error) {
 }
 
 // 关闭mysql
-func (this *MysqlClientImp) Close() {
+func (this *MysqlWWWClientImp) Close() {
 	this.client.Close()
 }

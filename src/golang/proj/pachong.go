@@ -1,5 +1,5 @@
 // file create by daihao, time is 2018/4/8 10:26
-package main
+package proj
 
 import (
 	"net/http"
@@ -14,8 +14,15 @@ import (
 	"golang/dao"
 )
 
+type PC struct {
+}
+
+func NewPCInit() *PC {
+	return new(PC)
+}
+
 // 网页下载器
-func DownloadHtml(url string) string {
+func (this *PC) downloadHtml(url string) string {
 	resp, err := http.Get(url)
 	if err != nil {
 		fmt.Println(err)
@@ -32,7 +39,7 @@ func DownloadHtml(url string) string {
 }
 
 // 网页标题是否存在标题关键字组
-func TitleContainKeyWord(title string, titlekeyword []string) bool {
+func (this *PC) titleContainKeyWord(title string, titlekeyword []string) bool {
 	for _, word := range titlekeyword {
 		if !strings.Contains(title, word) {
 			return false
@@ -42,7 +49,7 @@ func TitleContainKeyWord(title string, titlekeyword []string) bool {
 }
 
 // 解析网页
-func ParseHtml(passtoken entity.PageSiteTokeStruct, msg entity.PageTitleStruct, html, keyword string, titleKeyword []string) []entity.PageTitleStruct {
+func (this *PC) parseHtml(passtoken entity.PageSiteTokeStruct, msg entity.PageTitleStruct, html, keyword string, titleKeyword []string) []entity.PageTitleStruct {
 	temp := new(entity.PageTitleStruct)
 	protocol := strings.Split(msg.URL, "/")[0] // 协议：http或者https
 	ret := make([]entity.PageTitleStruct, 0)
@@ -55,10 +62,10 @@ func ParseHtml(passtoken entity.PageSiteTokeStruct, msg entity.PageTitleStruct, 
 	}
 	temp.Title = strings.TrimSpace(res[0][1])
 
-	html = TrimHtml(html) // 去除网页标签，将字母全部小写
+	html = this.trimHtml(html) // 去除网页标签，将字母全部小写
 
 	// 标题含关键字直接订阅
-	if TitleContainKeyWord(strings.ToLower(temp.Title), titleKeyword) || strings.Count(html, keyword) >= utils.SUBSCRIBENUM {
+	if this.titleContainKeyWord(strings.ToLower(temp.Title), titleKeyword) || strings.Count(html, keyword) >= utils.SUBSCRIBENUM {
 		// 这个是用户订阅的网页
 		if strings.Contains(msg.URL, "category") || strings.Contains(msg.URL, "month") || strings.Contains(msg.URL, "page") {
 
@@ -124,7 +131,7 @@ func ParseHtml(passtoken entity.PageSiteTokeStruct, msg entity.PageTitleStruct, 
 }
 
 // 处理网页无关信息
-func TrimHtml(src string) string {
+func (this *PC) trimHtml(src string) string {
 	//将HTML标签全转换成小写
 	var re *regexp.Regexp
 
@@ -168,11 +175,11 @@ func TrimHtml(src string) string {
 }
 
 // 启动爬虫
-func StartPC(url, keyword, site, token string, userid int, titleKeyword []string) {
+func (this *PC) StartPC(url, keyword, site, token, userid string, titleKeyword []string) {
 	starttoken := entity.PageTitleStruct{"网站首页", url}
 	usersub := entity.UserSubStruct{Keyword: keyword}
 	passtoken := entity.PageSiteTokeStruct{Site: site, Token: token}
-	utils.SubUserMap[usersub] = append(make([]int, 0), userid)
+	utils.SubUserMap[usersub] = append(make([]string, 0), userid)
 	utils.UserSubMap[userid] = append(make([]entity.UserSubStruct, 0), usersub)
 	utils.PageTitleMap[starttoken.URL] = starttoken.Title
 	utils.PageTitleList.PushBack(starttoken)
@@ -197,11 +204,11 @@ func StartPC(url, keyword, site, token string, userid int, titleKeyword []string
 				utils.PageTitleList.Remove(ele)
 				countsm.Unlock()
 
-				html := DownloadHtml(data.URL)
+				html := this.downloadHtml(data.URL)
 				if html == "" {
 					continue
 				}
-				ret := ParseHtml(passtoken, data, html, keyword, titleKeyword)
+				ret := this.parseHtml(passtoken, data, html, keyword, titleKeyword)
 
 				for _, r := range ret {
 
@@ -233,7 +240,7 @@ func StartPC(url, keyword, site, token string, userid int, titleKeyword []string
 }
 
 // 切换爬虫
-func CutovePC() {
+func (this *PC) CutovePC() {
 	// 从redis中获取现在需要爬取的相关信息
 	key := utils.GetWaitPCQueueKey()
 	val := dao.RedisCacheDao.GetPCBody(key)

@@ -1,7 +1,9 @@
 // file create by daihao, time is 2018/4/16 11:14
 package utils
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // 通过获取待爬队列的信息
 // reids为list
@@ -9,4 +11,3 @@ import "fmt"
 func GetWaitPCQueueKey() string {
 	return fmt.Sprintf("waitPCQueue")
 }
-

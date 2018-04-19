@@ -4,6 +4,8 @@ package main
 import (
 	"net/http"
 	"fmt"
+	"runtime/debug"
+	"golang/utils"
 )
 
 func StartRouter(port int) error {
@@ -14,4 +16,15 @@ func StartRouter(port int) error {
 
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 	return err
+}
+
+// 防止程序挂掉
+func errorReport(action string, w http.ResponseWriter) {
+	if v := recover(); v != nil {
+		debug.PrintStack()
+		fmt.Println("发生意外错误")
+		res := utils.RespJson(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "")
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(res)
+	}
 }

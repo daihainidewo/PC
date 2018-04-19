@@ -20,6 +20,7 @@ func indexNoLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func userLogin(w http.ResponseWriter, r *http.Request) {
+	defer errorReport("userLogin", w)
 	fmt.Println("get /user/login", time.Now())
 	r.ParseForm()
 	username := r.PostForm.Get("username")

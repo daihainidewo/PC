@@ -29,8 +29,8 @@ var PageLimitScanNum *TokenBucket // 限制生产者大小
 
 var PageSM *sync.Mutex // 读写PageTitleMap锁
 
-var UserSubMap map[int][]entity.UserSubStruct // 用户订阅map，key：用户id，value：用户订阅结构体，用户映射订阅
+var UserSubMap map[string][]entity.UserSubStruct // 用户订阅map，key：用户id，value：用户订阅结构体，用户映射订阅
 
-var SubUserMap map[entity.UserSubStruct][]int // 订阅映射用户
+var SubUserMap map[entity.UserSubStruct][]string // 订阅映射用户
 
 var TempPageTitleSlice []entity.PageTitleStruct // 临时存放钱
