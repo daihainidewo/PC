@@ -13,6 +13,7 @@ import (
 var (
 	SUBSCRIBENUM       int                               // 订阅数限制，大于此则认为是用户的订阅网页
 	PROJECTNUM         int                               // 创建协程数
+	PATIME             int64                             // 每个协程爬取的时间
 	PACOUNT            int                               // 每个协程最大爬取数
 	NONEDATASLEEPTIME  time.Duration                     // 无数据消费休眠时间
 	PageTitleMap       map[string]string                 // 查重map

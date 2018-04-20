@@ -10,6 +10,7 @@ import (
 	"golang/service"
 	"golang/dao"
 	"time"
+	"golang/proj"
 )
 
 func main() {
@@ -28,6 +29,8 @@ func main() {
 	// 启动服务
 	service.WWWService = service.NewWWWService()
 	service.ProjService = service.NewProjService()
+
+	proj.PCService = proj.NewPCInit()
 
 	dao.RedisCacheDao = dao.NewRedisCache(conf.RedisAddr, conf.RedisPasswd, conf.RedisDB)
 	dao.MysqlProjDao = dao.NewProjMysqlClient(conf.MysqlProjDriverName, conf.MysqlProjDataSourceName)
@@ -48,6 +51,7 @@ func main() {
 	utils.PACOUNT = conf.PaCount
 	utils.NONEDATASLEEPTIME = time.Duration(conf.NoneDataSleepTime) * time.Millisecond
 	utils.COOKIEEXPIRE = time.Duration(conf.CookieExpire) * time.Second
+	utils.PATIME = conf.PaTime
 
 	// 启动爬虫服务
 	service.ProjService.CtrlPC()

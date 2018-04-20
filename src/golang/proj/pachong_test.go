@@ -13,6 +13,12 @@ import (
 )
 
 func startPC() {
+	utils.SUBSCRIBENUM = 5
+	utils.PROJECTNUM = 100
+	utils.PACOUNT = 20
+	utils.NONEDATASLEEPTIME = time.Duration(30) * time.Millisecond
+	//utils.COOKIEEXPIRE = time.Duration(conf.CookieExpire) * time.Second
+	utils.PATIME = 30
 	utils.Count = 0
 	utils.Repacecount = 1
 	utils.Runcount = 0
@@ -25,6 +31,7 @@ func startPC() {
 	utils.PageTitleList = list.New()
 	utils.UserSubMap = make(map[string][]entity.UserSubStruct)
 	utils.SubUserMap = make(map[entity.UserSubStruct][]string)
+	PCService = NewPCInit()
 	fmt.Println("pro chan", utils.PageLimitProNum.Len(), "scan chan", utils.PageLimitScanNum.Len())
 	go func() {
 		for {
@@ -36,13 +43,13 @@ func startPC() {
 
 func TestDownloadHtml(t *testing.T) {
 	startPC()
-	url := "https://blog.csdn.net/jcjc918/article/list"
-	html := DownloadHtml(url)
-	//fmt.Println(html)
-	fmt.Println(time.Now())
-	for i := 0; i < 1000; i++ {
-		TrimHtml(html)
-	}
+	//url := "https://blog.csdn.net/jcjc918/article/list"
+	//html := DownloadHtml(url)
+	////fmt.Println(html)
+	//fmt.Println(time.Now())
+	//for i := 0; i < 1000; i++ {
+	//	TrimHtml(html)
+	//}
 	fmt.Println(time.Now())
 }
 
@@ -259,12 +266,12 @@ func TestStartPC(t *testing.T) {
 	url := "https://sustyuxiao.github.io/"  // 搜索起始url
 	keyword := ""                           // 全文搜索关键字
 	token := "sustyuxiao.github.io"         // 控制网站搜索域
-	userid := 123                           // 用户id
+	userid := "1024"                        // 用户id
 	site := "https://sustyuxiao.github.io/" // 搜索站点
 	titleKeyword := make([]string, 0)       // 标题关键字
 	//titleKeyword = append(titleKeyword, "c++")
 	//titleKeyword = append(titleKeyword, "面经")
 	keyword = strings.ToLower(keyword)
-	StartPC(url, keyword, site, token, userid, titleKeyword)
+	PCService.StartPC(url, keyword, site, token, userid, titleKeyword)
 	fmt.Println(time.Now(), "map len", len(utils.PageTitleMap), "list len", utils.PageTitleList.Len(), "runcount", utils.Runcount, "count", utils.Count, "repacecount", utils.Repacecount)
 }

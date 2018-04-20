@@ -65,9 +65,9 @@ func (this *PC) parseHtml(passtoken entity.PageSiteTokeStruct, msg entity.PageTi
 
 	// 标题含关键字直接订阅
 	if this.titleContainKeyWord(strings.ToLower(temp.Title), titleKeyword) || strings.Count(html, keyword) >= utils.SUBSCRIBENUM {
-		// 这个是用户订阅的网页
+		// 这个是用户订阅的网页，过滤掉某些url所包含的关键字
 		if strings.Contains(msg.URL, "category") || strings.Contains(msg.URL, "month") || strings.Contains(msg.URL, "page") {
-
+			// 这里可以做成自定义的
 		} else {
 			//fmt.Println("这个是用户订阅的网页，title:", temp.Title, "url:", msg.URL)
 			tempret := entity.PageTitleStruct{Title: temp.Title, URL: msg.URL}
@@ -113,7 +113,6 @@ func (this *PC) parseHtml(passtoken entity.PageSiteTokeStruct, msg entity.PageTi
 				temp.URL = msg.URL + link[2]
 			} else {
 				if !strings.Contains(link[2], ":") {
-					//if len(link[2]) > 7 && link[2][0:7] != "mailto:" && link[2][0:4] != "ftp:" {
 					fmt.Println("非法的URL：", link[2], "原网页url：", msg.URL)
 				}
 				continue
@@ -192,6 +191,7 @@ func (this *PC) StartPC(url, keyword, site, token, userid string, titleKeyword [
 				ch <- struct{}{}
 			}()
 			scancount := 1 // 协程退出标志
+			starttime := time.Now().Unix()
 			for {
 				countsm.Lock()
 				ele := utils.PageTitleList.Front()
@@ -221,13 +221,15 @@ func (this *PC) StartPC(url, keyword, site, token, userid string, titleKeyword [
 					}
 					//countsm.Lock()
 					utils.PageTitleList.PushBack(r)
+					fmt.Println("push one")
 					//countsm.Unlock()
 					(utils.PageTitleMap)[r.URL] = r.Title
 					utils.PageSM.Unlock()
 				}
+
 				scancount++
-				if scancount > utils.PACOUNT {
-					//fmt.Println("break one")
+				if scancount > utils.PACOUNT || (time.Now().Unix()-starttime > utils.PATIME) {
+					fmt.Println("break one")
 					break
 				}
 			}

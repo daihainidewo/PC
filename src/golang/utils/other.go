@@ -65,6 +65,9 @@ func ReadConf(path string) (*conf.ConfStruct, error) {
 	if ret.NoneDataSleepTime == 0 {
 		ret.NoneDataSleepTime = 30
 	}
+	if ret.PaTime == 0 {
+		ret.PaTime = 30
+	}
 	return ret, nil
 }
 
