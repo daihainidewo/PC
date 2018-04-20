@@ -69,7 +69,9 @@ func (this *PC) parseHtml(passtoken entity.PageSiteTokeStruct, msg entity.PageTi
 		if strings.Contains(msg.URL, "category") || strings.Contains(msg.URL, "month") || strings.Contains(msg.URL, "page") {
 
 		} else {
-			fmt.Println("这个是用户订阅的网页，title:", temp.Title, "url:", msg.URL)
+			//fmt.Println("这个是用户订阅的网页，title:", temp.Title, "url:", msg.URL)
+			tempret := entity.PageTitleStruct{Title: temp.Title, URL: msg.URL}
+			utils.UserSubUrl = append(utils.UserSubUrl, tempret)
 		}
 	}
 

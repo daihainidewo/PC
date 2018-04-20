@@ -9,11 +9,11 @@ import (
 )
 
 func StartRouter(port int) error {
-	http.HandleFunc("/index", index)
+	http.HandleFunc("/", index)
 	http.HandleFunc("/user/zhuce", userZhuce)
 	http.HandleFunc("/user/login", userLogin)
 	http.HandleFunc("/user/sub", userSub)
-
+	http.HandleFunc("/user/getSub", userGetSub)
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 	return err
 }

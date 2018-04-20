@@ -3,8 +3,8 @@ package service
 
 import (
 	"golang/dao"
-	"encoding/json"
 	"golang/entity"
+	"golang/utils"
 )
 
 type WWWServiceImp struct{}
@@ -28,32 +28,31 @@ func (this *WWWServiceImp) SetUserSubMsg(userid, suburl, keyword, site, token st
 		Site:         site,
 	}
 
-	submsg := new([]entity.User2SubStruct)
-	if val != "" {
-		err := json.Unmarshal([]byte(val), submsg)
-		if err != nil {
-			return err
+	if val == nil {
+		val = new([]entity.User2SubStruct)
+		*val = append(*val, temp)
+		_, err = dao.MysqlWWWDao.SetUserSubMsg(userid, val)
+	} else {
+		// 查重
+		for _, v := range *val {
+			if utils.User2SubStructIsEqual(v, temp) {
+				return nil
+			}
 		}
+		*val = append(*val, temp)
+		_, err = dao.MysqlWWWDao.SetUserSubMsgUpdate(userid, val)
 	}
-	*submsg = append(*submsg, temp)
-	ret, err := json.Marshal(submsg)
-	if err != nil {
-		return err
-	}
-	_, err = dao.MysqlWWWDao.SetUserSubMsg(userid, string(ret))
 	return err
 }
 
 // 获取用户订阅的相关信息
 func (this *WWWServiceImp) GetUserSubMsg(userid string) (*[]entity.User2SubStruct, error) {
 	// 从mysql中查看是否有已订阅的值
-	val, err := dao.MysqlWWWDao.GetUserSubMsg(userid)
-	if err != nil {
-		return nil, err
-	}
-	submsg := new([]entity.User2SubStruct)
-	err = json.Unmarshal([]byte(val), submsg)
-	return submsg, err
+	//val, err := dao.MysqlWWWDao.GetUserSubMsg(userid)
+	//if err != nil {
+	//	return nil, err
+	//}
+	return dao.MysqlWWWDao.GetUserSubMsg(userid)
 }
 
 // 通过订阅信息查询订阅用户
@@ -75,4 +74,8 @@ func (this *WWWServiceImp) SetPCBody(userid, suburl, keyword, site, token string
 		return err
 	}
 	return nil
+}
+
+func (this *WWWServiceImp) Close() {
+
 }

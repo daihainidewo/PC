@@ -40,16 +40,4 @@ type PCQueueStruct struct {
 	//Mysqlkey string `json:"mysqlkey"`
 }
 
-/*
 
-*/
-// 配置文件信息
-type ConfStruct struct {
-	RedisAddr               string `json:"redis_addr"`
-	RedisPasswd             string `json:"redis_passwd"`
-	RedisDB                 int    `json:"redis_db"`
-	MysqlProjDriverName     string `json:"mysql_proj_driver_name"`
-	MysqlProjDataSourceName string `json:"mysql_proj_data_source_name"`
-	MysqlWWWDriverName      string `json:"mysql_www_driver_name"`
-	MysqlWWWDataSourceName  string `json:"mysql_www_data_source_name"`
-}

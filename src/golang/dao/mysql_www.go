@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/Go-SQL-Driver/MySQL"
+	"golang/entity"
+	"encoding/json"
 )
 
 type MysqlWWWClientImp struct {
@@ -67,27 +69,43 @@ func (this *MysqlWWWClientImp) doQuery(sql string, args ...interface{}) ([][]int
 }
 
 // 设置用户订阅
-func (this *MysqlWWWClientImp) SetUserSubMsg(idkey, value string) (int64, error) {
+func (this *MysqlWWWClientImp) SetUserSubMsg(idkey string, value *[]entity.User2SubStruct) (int64, error) {
+	val, err := json.Marshal(value)
+	if err != nil {
+		return -1, nil
+	}
 	sql := `insert into user_sub (user_sub_user_id, user_sub_sub_msg) value (?, ?)`
-	res, err := this.doSQL(sql, idkey, value)
+	res, err := this.doSQL(sql, idkey, string(val))
+	if err != nil {
+		return -1, err
+	}
+	return res.RowsAffected()
+}
+func (this *MysqlWWWClientImp) SetUserSubMsgUpdate(idkey string, value *[]entity.User2SubStruct) (int64, error) {
+	val, err := json.Marshal(value)
+	if err != nil {
+		return -1, nil
+	}
+	sql := `update user_sub set user_sub_sub_msg=? where user_sub_user_id=?`
+	res, err := this.doSQL(sql, string(val), idkey)
 	if err != nil {
 		return -1, err
 	}
 	return res.RowsAffected()
 }
 
-// 获取用户订阅
-func (this *MysqlWWWClientImp) GetUserSubMsg(userid string) (string, error) {
+// 获取用户订阅, 通过用户id去获取主播曾经订阅的内容
+func (this *MysqlWWWClientImp) GetUserSubMsg(userid string) (*[]entity.User2SubStruct, error) {
 	sql := fmt.Sprintf(`SELECT user_sub_sub_msg FROM pachong.user_sub where user_sub_user_id=%s`, userid)
 	res, err := this.doQuery(sql)
+	if err != nil || len(res) == 0 {
+		return nil, err
+	}
+	ret := new([]entity.User2SubStruct)
+	err = json.Unmarshal(res[0][0].([]byte), ret)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	if len(res) == 0 {
-		return "", nil
-	}
-	ret := string(res[0][0].([]byte))
-
 	return ret, nil
 }
 
@@ -105,11 +123,8 @@ func (this *MysqlWWWClientImp) SetSubUserMsg(submsg, userids string) (int64, err
 func (this *MysqlWWWClientImp) GetSubUserMsg(submsg string) (string, error) {
 	sql := `select pc_sub_user_ids from pachong.pc_sub_user where pc_sub_user_sub=?`
 	res, err := this.doQuery(sql, submsg)
-	if err != nil {
+	if err != nil || len(res) == 0 {
 		return "", err
-	}
-	if len(res) == 0 {
-		return "", nil
 	}
 	ret := string(res[0][0].([]byte))
 

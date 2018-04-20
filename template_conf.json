@@ -1,0 +1,25 @@
+{
+  "//": {
+    "start_port": "服务器启动端口",
+    "redis_addr": "redis服务地址",
+    "mysql_data_source_name": "mysql服务器地址",
+    "subscribe_num": "最低出现关键字次数",
+    "project_num": "爬虫启动协程数量",
+    "pa_count": "每个协程最多爬取有效网页数",
+    "none_data_sleep_time": "爬虫待爬队列为空时，当前协程休眠时间，单位毫秒",
+    "cookie_expire": "cookie过期时间，单位秒"
+  },
+  "start_port": 8080,
+  "redis_addr": "127.0.0.1:6379",
+  "redis_passwd": "",
+  "redis_db": 0,
+  "mysql_proj_driver_name": "mysql",
+  "mysql_proj_data_source_name": "root:@tcp(localhost:3306)/pachong?charset=utf8",
+  "mysql_www_driver_name": "mysql",
+  "mysql_www_data_source_name": "root:@tcp(localhost:3306)/pachong?charset=utf8",
+  "subscribe_num": 50,
+  "project_num": 1000,
+  "pa_count": 20,
+  "none_data_sleep_time": 30,
+  "cookie_expire": 30
+}

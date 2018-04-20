@@ -30,7 +30,7 @@ val : 存放排队信息
 func (this *RedisCacheImp) GetPCBodyMsg(key string) (*entity.PCQueueStruct, error) {
 	ret := new(entity.PCQueueStruct)
 	val, err := this.client.LPop(key).Result() // 只返回
-	if err != nil {
+	if err != nil || val == "" {
 		return nil, err
 	}
 	return ret, json.Unmarshal([]byte(val), ret)
@@ -43,4 +43,9 @@ func (this *RedisCacheImp) SetPCBodyMsg(key string, val *entity.PCQueueStruct) e
 		return err
 	}
 	return this.client.RPush(key, string(ret)).Err()
+}
+
+// 关闭redis
+func (this *RedisCacheImp) Close() {
+	this.client.Close()
 }

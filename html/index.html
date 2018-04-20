@@ -3,11 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <title>index</title>
+    <script src="//cdn.bootcss.com/jquery/2.2.3/jquery.min.js"></script>
+    <script src="jquery.js"></script>
 </head>
 <body>
 <h1>
     <center>hello world</center>
 </h1>
+<script>
+    $(document).ready(function () {
+        $("#btn").click(function () {
+            alert($("#f1").serialize());
+        });
+    })
+</script>
 <h1>welcome!!</h1>
 <form>
     <label>添加搜索词条</label><br/>
@@ -16,15 +25,19 @@
     <input type="text" name="titlekeyword" placeholder="标题关键字"/><br/>
     <input type="text" name="" placeholder="主站URL"/><br/>
     <input type="text" name="" placeholder="网页token"/><br/>
-    <input type="submit" value="提交">
+    <input type="submit" value="提交" id="submit"/>
 </form>
 <form>
     <label>获取搜索未读词条</label><br/>
     <input type="submit" name="" value="提交"/><br/>
 </form>
-<form>
-    <label>获取搜索全部词条</label><br/>
+<form id="f1">
+    <label>获取搜索全部词条</label><input type="text" name="msg"/><br/>
     <input type="submit" name="" value="提交"/><br/>
 </form>
+<div>
+    <input type="text" id="inp"/>
+    <button id="btn">提交</button>
+</div>
 </body>
 </html>

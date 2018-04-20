@@ -16,4 +16,15 @@ type UserSubStruct struct {
 	Keyword string // 搜索关键字
 }
 
+/*
+用户订阅信息，包括已读和未读
+userid : 用户id
+submsg : 用户订阅的url数组
+*/
+type UserSubMsgStruct struct {
+	Userid string            `json:userid`
+	SubMsg []PageTitleStruct `json:"usbmsg"`
+}
 
+type EmptyStruct struct {
+}

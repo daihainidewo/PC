@@ -56,20 +56,20 @@ func userZhuce(w http.ResponseWriter, r *http.Request) {
 
 func index(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("get /index", time.Now())
-
-	cookie, err1 := utils.Htmlcookie.ReadCookie(r, "userid")
-	if err1 != nil {
-		fmt.Println(err1)
-	}
-	if cookie == "" { // 没有cookie，用户需要登录
-		indexNoLogin(w, r)
-		return
-	}
+	//
+	//cookie, err1 := utils.Htmlcookie.ReadCookie(r, "userid")
+	//if err1 != nil {
+	//	fmt.Println(err1)
+	//}
+	//if cookie == "" { // 没有cookie，用户需要登录
+	//	indexNoLogin(w, r)
+	//	return
+	//}
 
 	r.ParseForm()
 	//user := r.PostForm.Get("user")
 	//fmt.Println(user)
-	fp, err := os.Open(utils.GetUrl("index.html"))
+	fp, err := os.Open("html\\index.html")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -89,12 +89,21 @@ func userSub(w http.ResponseWriter, r *http.Request) {
 	token := r.Form.Get("token")
 	site := r.Form.Get("site")
 	titlekw := r.Form.Get("titlekeyword")
-	if userid == "" || suburl == "" || keyword == "" {
+	if userid == "" || suburl == "" {
 		res := utils.RespJson(utils.INVALID_PARAMS, utils.RespMsg[utils.INVALID_PARAMS], "")
 		w.Write(res)
 		return
 	}
-	titlekeyword := strings.Split(titlekw, ",")
+
+	titlekey := strings.Split(titlekw, ",")
+	titlekeyword := make([]string, 0)
+	// 去除空值
+	for _, v := range titlekey {
+		if v == "" {
+			continue
+		}
+		titlekeyword = append(titlekeyword, v)
+	}
 	err := service.WWWService.SetUserSubMsg(userid, suburl, keyword, site, token, titlekeyword)
 	if err != nil {
 		if err != nil {
@@ -103,6 +112,26 @@ func userSub(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	res := utils.RespJson(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "")
+	res := utils.RespJson(utils.SUCCESS, utils.RespMsg[utils.SUCCESS], "")
+	w.Write(res)
+}
+
+func userGetSub(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("get /getUserSub", time.Now())
+	r.ParseForm()
+	userid := r.Form.Get("userid")
+	if userid == "" {
+		res := utils.RespJson(utils.INVALID_PARAMS, utils.RespMsg[utils.INVALID_PARAMS], "")
+		w.Write(res)
+		return
+	}
+	ret, err := service.WWWService.GetUserSubMsg(userid)
+	if err != nil {
+		res := utils.RespJson(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "")
+		w.Write(res)
+		return
+	}
+
+	res := utils.RespJson(utils.SUCCESS, utils.RespMsg[utils.SUCCESS], ret)
 	w.Write(res)
 }

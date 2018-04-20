@@ -9,7 +9,7 @@ import (
 )
 
 func start() {
-	RedisCacheDao = NewProjRedis("localhost:6379", "", 0)
+	RedisCacheDao = NewRedisCache("localhost:6379", "", 0)
 
 }
 
