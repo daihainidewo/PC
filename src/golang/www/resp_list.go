@@ -106,18 +106,17 @@ func userSub(w http.ResponseWriter, r *http.Request) {
 	}
 	err := service.WWWService.SetUserSubMsg(userid, suburl, keyword, site, token, titlekeyword)
 	if err != nil {
-		if err != nil {
-			res := utils.RespJson(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "")
-			w.Write(res)
-			return
-		}
+		fmt.Println(err)
+		res := utils.RespJson(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "")
+		w.Write(res)
+		return
 	}
 	res := utils.RespJson(utils.SUCCESS, utils.RespMsg[utils.SUCCESS], "")
 	w.Write(res)
 }
 
 func userGetSub(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("get /getUserSub", time.Now())
+	fmt.Println("get /userGetSub", time.Now())
 	r.ParseForm()
 	userid := r.Form.Get("userid")
 	if userid == "" {
@@ -126,6 +125,46 @@ func userGetSub(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ret, err := service.WWWService.GetUserSubMsg(userid)
+	if err != nil {
+		res := utils.RespJson(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "")
+		w.Write(res)
+		return
+	}
+
+	res := utils.RespJson(utils.SUCCESS, utils.RespMsg[utils.SUCCESS], ret)
+	w.Write(res)
+}
+
+func userReaded(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("get /userReaded", time.Now())
+	r.ParseForm()
+	userid := r.Form.Get("userid")
+	if userid == "" {
+		res := utils.RespJson(utils.INVALID_PARAMS, utils.RespMsg[utils.INVALID_PARAMS], "")
+		w.Write(res)
+		return
+	}
+	ret, err := service.WWWService.GetUserReaded(userid)
+	if err != nil {
+		res := utils.RespJson(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "")
+		w.Write(res)
+		return
+	}
+
+	res := utils.RespJson(utils.SUCCESS, utils.RespMsg[utils.SUCCESS], ret)
+	w.Write(res)
+}
+
+func userNoread(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("get /userNoread", time.Now())
+	r.ParseForm()
+	userid := r.Form.Get("userid")
+	if userid == "" {
+		res := utils.RespJson(utils.INVALID_PARAMS, utils.RespMsg[utils.INVALID_PARAMS], "")
+		w.Write(res)
+		return
+	}
+	ret, err := service.WWWService.GetUserNoread(userid)
 	if err != nil {
 		res := utils.RespJson(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "")
 		w.Write(res)

@@ -18,7 +18,7 @@ func startPC() {
 	utils.PACOUNT = 20
 	utils.NONEDATASLEEPTIME = time.Duration(30) * time.Millisecond
 	//utils.COOKIEEXPIRE = time.Duration(conf.CookieExpire) * time.Second
-	utils.PATIME = 30
+	utils.PATIME = 10
 	utils.Count = 0
 	utils.Repacecount = 1
 	utils.Runcount = 0
@@ -37,6 +37,12 @@ func startPC() {
 		for {
 			time.Sleep(1 * time.Second)
 			fmt.Println(time.Now(), "map len", len(utils.PageTitleMap), "list len", utils.PageTitleList.Len(), "runcount", utils.Runcount, "count", utils.Count, "repacecount", utils.Repacecount)
+		}
+	}()
+	go func() {
+		for {
+			time.Sleep(7 * time.Second)
+			fmt.Println(utils.UserSubUrl)
 		}
 	}()
 }
@@ -263,12 +269,12 @@ func TestDownloadHtml(t *testing.T) {
 
 func TestStartPC(t *testing.T) {
 	startPC()
-	url := "https://sustyuxiao.github.io/"  // 搜索起始url
-	keyword := ""                           // 全文搜索关键字
-	token := "sustyuxiao.github.io"         // 控制网站搜索域
-	userid := "1024"                        // 用户id
-	site := "https://sustyuxiao.github.io/" // 搜索站点
-	titleKeyword := make([]string, 0)       // 标题关键字
+	url := "https://blog.csdn.net/u013210620/article/details/79207145"  // 搜索起始url
+	keyword := ""                          // 全文搜索关键字
+	token := "blog.csdn.net/u013210620"        // 控制网站搜索域
+	userid := "1024"                       // 用户id
+	site := "https://blog.csdn.net" // 搜索站点
+	titleKeyword := make([]string, 0)      // 标题关键字
 	//titleKeyword = append(titleKeyword, "c++")
 	//titleKeyword = append(titleKeyword, "面经")
 	keyword = strings.ToLower(keyword)

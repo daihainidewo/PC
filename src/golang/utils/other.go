@@ -34,7 +34,6 @@ func ReadConf(path string) (*conf.ConfStruct, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(string(confstring))
 	if ret.RedisAddr == "" {
 		ret.RedisAddr = "localhost:6379"
 	}

@@ -75,20 +75,18 @@ func (this *PC) parseHtml(passtoken entity.PageSiteTokeStruct, msg entity.PageTi
 		}
 	}
 
-	utils.Countsm.Lock()
-	utils.Count++
-	utils.Countsm.Unlock()
+	//utils.Countsm.Lock()
+	//utils.Count++
+	//utils.Countsm.Unlock()
 
 	re = regexp.MustCompile(`(?s:<a(.*?)href="(.*?)"(.*?)>(.*?)</a>)`)
 	res = re.FindAllStringSubmatch(html, -1)
+
 	for _, link := range res {
 		if len(link[2]) < 2 {
 			continue
 		}
 		if link[2][0] == '#' {
-			continue
-		}
-		if len(link[2]) > 11 && link[2][0:11] == "javascript:" {
 			continue
 		}
 
@@ -112,9 +110,10 @@ func (this *PC) parseHtml(passtoken entity.PageSiteTokeStruct, msg entity.PageTi
 			} else if link[2][0] == '?' {
 				temp.URL = msg.URL + link[2]
 			} else {
-				if !strings.Contains(link[2], ":") {
-					fmt.Println("非法的URL：", link[2], "原网页url：", msg.URL)
+				if strings.Contains(link[2], ":") {
+					continue
 				}
+				fmt.Println("非法的URL：", link[2], "原网页url：", msg.URL)
 				continue
 			}
 		}
@@ -193,6 +192,10 @@ func (this *PC) StartPC(url, keyword, site, token, userid string, titleKeyword [
 			scancount := 1 // 协程退出标志
 			starttime := time.Now().Unix()
 			for {
+				if time.Now().Unix()-starttime > utils.PATIME {
+					//fmt.Println("break one")
+					break
+				}
 				countsm.Lock()
 				ele := utils.PageTitleList.Front()
 				if ele == nil || ele.Value == nil {
@@ -210,7 +213,6 @@ func (this *PC) StartPC(url, keyword, site, token, userid string, titleKeyword [
 					continue
 				}
 				ret := this.parseHtml(passtoken, data, html, keyword, titleKeyword)
-
 				for _, r := range ret {
 
 					utils.PageSM.Lock()
@@ -221,15 +223,14 @@ func (this *PC) StartPC(url, keyword, site, token, userid string, titleKeyword [
 					}
 					//countsm.Lock()
 					utils.PageTitleList.PushBack(r)
-					fmt.Println("push one")
 					//countsm.Unlock()
 					(utils.PageTitleMap)[r.URL] = r.Title
 					utils.PageSM.Unlock()
 				}
 
 				scancount++
-				if scancount > utils.PACOUNT || (time.Now().Unix()-starttime > utils.PATIME) {
-					fmt.Println("break one")
+				if scancount > utils.PACOUNT {
+					//fmt.Println("break one")
 					break
 				}
 			}
@@ -238,21 +239,4 @@ func (this *PC) StartPC(url, keyword, site, token, userid string, titleKeyword [
 	for i := 0; i < utils.PROJECTNUM; i++ {
 		<-ch
 	}
-	// 当目标网页小于当前预估网页时，程序会阻塞
-	//time.Sleep(1 * time.Second)
 }
-
-// 切换爬虫
-//func (this *PC) CutovePC() {
-//	// 从redis中获取现在需要爬取的相关信息
-//	key := utils.GetWaitPCQueueKey()
-//	val := dao.RedisCacheDao.GetPCBody(key)
-//	if val == "" {
-//		CutovePC()
-//	}
-//	// 调用爬取程序
-//
-//	// 存放当前信息去redis排队
-//
-//	// 存放相关信息去mysql
-//}

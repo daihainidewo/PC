@@ -13,7 +13,9 @@ func StartRouter(port int) error {
 	http.HandleFunc("/user/zhuce", userZhuce)
 	http.HandleFunc("/user/login", userLogin)
 	http.HandleFunc("/user/sub", userSub)
-	http.HandleFunc("/user/getSub", userGetSub)
+	http.HandleFunc("/user/getsub", userGetSub)
+	http.HandleFunc("/user/readed", userReaded)
+	http.HandleFunc("/user/noread", userNoread)
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 	return err
 }

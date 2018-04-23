@@ -69,7 +69,7 @@ func (this *MysqlWWWClientImp) doQuery(sql string, args ...interface{}) ([][]int
 }
 
 // 设置用户订阅
-func (this *MysqlWWWClientImp) SetUserSubMsg(idkey string, value *[]entity.User2SubStruct) (int64, error) {
+func (this *MysqlWWWClientImp) InsertUserSubMsg(idkey string, value *[]entity.User2SubStruct) (int64, error) {
 	val, err := json.Marshal(value)
 	if err != nil {
 		return -1, nil
@@ -81,7 +81,7 @@ func (this *MysqlWWWClientImp) SetUserSubMsg(idkey string, value *[]entity.User2
 	}
 	return res.RowsAffected()
 }
-func (this *MysqlWWWClientImp) SetUserSubMsgUpdate(idkey string, value *[]entity.User2SubStruct) (int64, error) {
+func (this *MysqlWWWClientImp) UpdateUserSubMsg(idkey string, value *[]entity.User2SubStruct) (int64, error) {
 	val, err := json.Marshal(value)
 	if err != nil {
 		return -1, nil
@@ -95,7 +95,7 @@ func (this *MysqlWWWClientImp) SetUserSubMsgUpdate(idkey string, value *[]entity
 }
 
 // 获取用户订阅, 通过用户id去获取主播曾经订阅的内容
-func (this *MysqlWWWClientImp) GetUserSubMsg(userid string) (*[]entity.User2SubStruct, error) {
+func (this *MysqlWWWClientImp) SelectUserSubMsg(userid string) (*[]entity.User2SubStruct, error) {
 	sql := fmt.Sprintf(`SELECT user_sub_sub_msg FROM pachong.user_sub where user_sub_user_id=%s`, userid)
 	res, err := this.doQuery(sql)
 	if err != nil || len(res) == 0 {
@@ -110,7 +110,7 @@ func (this *MysqlWWWClientImp) GetUserSubMsg(userid string) (*[]entity.User2SubS
 }
 
 // 设置该订阅有哪些用户
-func (this *MysqlWWWClientImp) SetSubUserMsg(submsg, userids string) (int64, error) {
+func (this *MysqlWWWClientImp) InsertSubUserMsg(submsg, userids string) (int64, error) {
 	sql := `insert into pc_sub_user (pc_sub_user_sub, pc_sub_user_ids) values (?,?)`
 	res, err := this.doSQL(sql, submsg, userids)
 	if err != nil {
@@ -120,7 +120,7 @@ func (this *MysqlWWWClientImp) SetSubUserMsg(submsg, userids string) (int64, err
 }
 
 // 获取该订阅有哪些用些
-func (this *MysqlWWWClientImp) GetSubUserMsg(submsg string) (string, error) {
+func (this *MysqlWWWClientImp) SelectSubUserMsg(submsg string) (string, error) {
 	sql := `select pc_sub_user_ids from pachong.pc_sub_user where pc_sub_user_sub=?`
 	res, err := this.doQuery(sql, submsg)
 	if err != nil || len(res) == 0 {
@@ -129,6 +129,28 @@ func (this *MysqlWWWClientImp) GetSubUserMsg(submsg string) (string, error) {
 	ret := string(res[0][0].([]byte))
 
 	return ret, nil
+}
+
+// 获取已读消息
+func (this *MysqlWWWClientImp) SelectUserSubMsgReaded(userid string) (*entity.UserSubMsgStruct, error) {
+	ret := new(entity.UserSubMsgStruct)
+	sql := `SELECT user_sub_msg_readed_msg FROM pachong.user_sub_msg_read where user_sub_msg_read_userid=?`
+	res, err := this.doQuery(sql, userid)
+	if err != nil || len(res) == 0 {
+		return nil, err
+	}
+	return ret, json.Unmarshal(res[0][0].([]byte), ret)
+}
+
+// 获取未读消息
+func (this *MysqlWWWClientImp) SelectUserSubMsgNoRead(userid string) (*entity.UserSubMsgStruct, error) {
+	ret := new(entity.UserSubMsgStruct)
+	sql := `SELECT user_sub_msg_no_read_msg FROM pachong.user_sub_msg_read where user_sub_msg_read_userid=?`
+	res, err := this.doQuery(sql, userid)
+	if err != nil || len(res) == 0 {
+		return nil, err
+	}
+	return ret, json.Unmarshal(res[0][0].([]byte), ret)
 }
 
 // 关闭mysql

@@ -11,6 +11,9 @@ import (
 	"golang/dao"
 	"time"
 	"golang/proj"
+	"golang/entity"
+	"container/list"
+	"sync"
 )
 
 func main() {
@@ -53,8 +56,15 @@ func main() {
 	utils.COOKIEEXPIRE = time.Duration(conf.CookieExpire) * time.Second
 	utils.PATIME = conf.PaTime
 
+	utils.SubUserMap = make(map[entity.UserSubStruct][]string)
+	utils.UserSubMap = make(map[string][]entity.UserSubStruct)
+	utils.PageTitleMap = make(map[string]string)
+	utils.PageTitleList = list.New()
+
+	utils.PageSM = new(sync.Mutex)
+
 	// 启动爬虫服务
-	service.ProjService.CtrlPC()
+	go service.ProjService.CtrlPC()
 
 	signCh := make(chan os.Signal)
 	signal.Notify(signCh, os.Interrupt, os.Kill, syscall.SIGTERM)

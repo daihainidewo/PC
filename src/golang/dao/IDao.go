@@ -12,21 +12,21 @@ type IRedisCacheDao interface {
 var RedisCacheDao IRedisCacheDao
 
 type IMysqlWWWDao interface {
-	SetUserSubMsg(idkey string, value *[]entity.User2SubStruct) (int64, error)
-	SetUserSubMsgUpdate(idkey string, value *[]entity.User2SubStruct) (int64, error)
-	GetUserSubMsg(userid string) (*[]entity.User2SubStruct, error)
-	SetSubUserMsg(submsg, userids string) (int64, error)
-	GetSubUserMsg(submsg string) (string, error)
+	InsertUserSubMsg(idkey string, value *[]entity.User2SubStruct) (int64, error)
+	UpdateUserSubMsg(idkey string, value *[]entity.User2SubStruct) (int64, error)
+	SelectUserSubMsg(userid string) (*[]entity.User2SubStruct, error)
+	InsertSubUserMsg(submsg, userids string) (int64, error)
+	SelectSubUserMsg(submsg string) (string, error)
+	SelectUserSubMsgNoRead(userid string) (*entity.UserSubMsgStruct, error)
+	SelectUserSubMsgReaded(userid string) (*entity.UserSubMsgStruct, error)
 	Close()
 }
 
 var MysqlWWWDao IMysqlWWWDao
 
 type IMysqlProjDao interface {
-	SetPCBody(userid_timest string, value *entity.PCBreakStruct) (int64, error)
-	GetPCBody(userid_timest string) (*entity.PCBreakStruct, error)
-	GetUserSubMsgNoRead(userid string) (*entity.UserSubMsgStruct, error)
-	GetUserSubMsgReaded(userid string) (*entity.UserSubMsgStruct, error)
+	InsertPCBody(userid_timest string, value *entity.PCBreakStruct) (int64, error)
+	SelectPCBody(userid_timest string) (*entity.PCBreakStruct, error)
 	InsertUserSubMsgReaded(userid string, value *entity.UserSubMsgStruct) (int64, error)
 	UpdateUserSubMsgReaded(userid string, value *entity.UserSubMsgStruct) (int64, error)
 	InsertUserSubMsgNoRead(userid string, value *entity.UserSubMsgStruct) (int64, error)

@@ -69,7 +69,7 @@ func (this *MysqlProjClientImp) doQuery(sql string, args ...interface{}) ([][]in
 }
 
 // 设置爬取队列的信息
-func (this *MysqlProjClientImp) SetPCBody(userid_timest string, value *entity.PCBreakStruct) (int64, error) {
+func (this *MysqlProjClientImp) InsertPCBody(userid_timest string, value *entity.PCBreakStruct) (int64, error) {
 	val, err := json.Marshal(value)
 	if err != nil {
 		return -1, err
@@ -83,7 +83,7 @@ func (this *MysqlProjClientImp) SetPCBody(userid_timest string, value *entity.PC
 }
 
 // 提取爬取队列的信息
-func (this *MysqlProjClientImp) GetPCBody(userid_timest string) (*entity.PCBreakStruct, error) {
+func (this *MysqlProjClientImp) SelectPCBody(userid_timest string) (*entity.PCBreakStruct, error) {
 	sql := `select pc_body_msg_body from pachong.pc_body_msg where pc_body_msg_user_id=?`
 	res, err := this.doQuery(sql, userid_timest)
 	if err != nil || len(res) == 0 {
@@ -101,28 +101,6 @@ func (this *MysqlProjClientImp) GetPCBody(userid_timest string) (*entity.PCBreak
 
 }
 
-// 获取已读消息
-func (this *MysqlProjClientImp) GetUserSubMsgNoRead(userid string) (*entity.UserSubMsgStruct, error) {
-	ret := new(entity.UserSubMsgStruct)
-	sql := `SELECT user_sub_msg_readed_msg FROM pachong.user_sub_msg_read where user_sub_msg_read_userid=?`
-	res, err := this.doQuery(sql, userid)
-	if err != nil || len(res) == 0 {
-		return nil, err
-	}
-	return ret, json.Unmarshal(res[0][0].([]byte), ret)
-}
-
-// 获取未读消息
-func (this *MysqlProjClientImp) GetUserSubMsgReaded(userid string) (*entity.UserSubMsgStruct, error) {
-	ret := new(entity.UserSubMsgStruct)
-	sql := `SELECT user_sub_msg_no_read_msg FROM pachong.user_sub_msg_read where user_sub_msg_read_userid=?`
-	res, err := this.doQuery(sql, userid)
-	if err != nil || len(res) == 0 {
-		return nil, err
-	}
-	return ret, json.Unmarshal(res[0][0].([]byte), ret)
-}
-
 func (this *MysqlProjClientImp) InsertUserSubMsgReaded(userid string, value *entity.UserSubMsgStruct) (int64, error) {
 	res, err := json.Marshal(value)
 	if err != nil {
@@ -133,7 +111,7 @@ func (this *MysqlProjClientImp) InsertUserSubMsgReaded(userid string, value *ent
 		return -1, err
 	}
 	sql := `insert INTO pachong.user_sub_msg_read (user_sub_msg_read_userid,user_sub_msg_no_read_msg,user_sub_msg_readed_msg) values(?,?,?)`
-	ret, err := this.doSQL(sql, userid, string(res), empty)
+	ret, err := this.doSQL(sql, userid, empty, string(res))
 	if err != nil {
 		return -1, err
 	}
@@ -161,7 +139,7 @@ func (this *MysqlProjClientImp) InsertUserSubMsgNoRead(userid string, value *ent
 		return -1, err
 	}
 	sql := `insert INTO pachong.user_sub_msg_read (user_sub_msg_read_userid,user_sub_msg_no_read_msg,user_sub_msg_readed_msg) values(?,?,?)`
-	ret, err := this.doSQL(sql, userid, empty, string(res))
+	ret, err := this.doSQL(sql, userid, string(res), empty)
 	if err != nil {
 		return -1, err
 	}
