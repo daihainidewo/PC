@@ -20,6 +20,9 @@ type IWWWService interface {
 	GetUserReaded(userid string) (*entity.UserSubMsgStruct, error)
 	GetUserNoread(userid string) (*entity.UserSubMsgStruct, error)
 	Close()
+	CheckUser(username string, passwd string) (string, error)
+	SetUserMsg(username, userpasswd string) (string, error)
+	ChangeUserMsg(userid, username, userpasswd string) error
 }
 
 var WWWService IWWWService

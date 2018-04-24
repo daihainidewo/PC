@@ -2,19 +2,19 @@
 package main
 
 import (
-	"os"
-	"fmt"
-	"os/signal"
-	"syscall"
-	"golang/utils"
-	"golang/service"
-	"golang/dao"
-	"time"
-	"golang/proj"
-	"golang/entity"
 	"container/list"
-	"sync"
 	"encoding/json"
+	"fmt"
+	"golang/dao"
+	"golang/entity"
+	"golang/proj"
+	"golang/service"
+	"golang/utils"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
+	"time"
 )
 
 func main() {
@@ -36,7 +36,14 @@ func main() {
 		fmt.Println("配置文件错误，请检查错误，error：", err)
 		return
 	}
-	fmt.Println(string(confstring))
+	// 设置进程日志
+	if conf.LogPath != "" {
+		logf, err := os.OpenFile(conf.LogPath, os.O_WRONLY|os.O_CREATE|os.O_SYNC, 0755)
+		if err != nil {
+			fmt.Println("读取日志文件错误，error：", err)
+		}
+		os.Stdout = logf
+	}
 	// 启动服务
 	service.WWWService = service.NewWWWService()
 	service.ProjService = service.NewProjService()
@@ -78,6 +85,7 @@ func main() {
 	signal.Notify(signCh, os.Interrupt, os.Kill, syscall.SIGTERM)
 	go StartRouter(conf.StartPort)
 	fmt.Println("server start, port:", conf.StartPort)
+	fmt.Println(string(confstring))
 
 	<-signCh
 	fmt.Println("server end")

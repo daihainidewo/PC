@@ -19,6 +19,12 @@ type IMysqlWWWDao interface {
 	SelectSubUserMsg(submsg string) (string, error)
 	SelectUserSubMsgNoRead(userid string) (*entity.UserSubMsgStruct, error)
 	SelectUserSubMsgReaded(userid string) (*entity.UserSubMsgStruct, error)
+	InsertUserMsg(userid, username, passwd string) (int64, error)
+	UpdateUserMsgUserpasswd(userid, userpasswd string) (int64, error)
+	UpdateUserMsgUsername(userid, username string) (int64, error)
+	SelectUserMsg(userid string) (string, string, error)
+	SelectUserSameName(username string) (bool, error)
+	CheckUserNamePasswd(username, userpasswd string) (string, error)
 	Close()
 }
 

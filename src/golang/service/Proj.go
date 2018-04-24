@@ -2,12 +2,12 @@
 package service
 
 import (
-	"golang/dao"
-	"golang/utils"
-	"golang/proj"
-	"time"
 	"fmt"
+	"golang/dao"
 	"golang/entity"
+	"golang/proj"
+	"golang/utils"
+	"time"
 )
 
 type ProjServiceImp struct {
@@ -23,7 +23,7 @@ func (this *ProjServiceImp) startNextPC() (string, *entity.PCBreakStruct, error)
 	redikey := utils.GetWaitPCQueueKey()
 	pcbody, err := dao.RedisCacheDao.GetPCBodyMsg(redikey)
 	if err != nil {
-		return "", nil, err
+		return "", nil, fmt.Errorf("startNextPC:%s", err)
 	}
 	if pcbody == nil {
 		return "", nil, nil
@@ -33,7 +33,7 @@ func (this *ProjServiceImp) startNextPC() (string, *entity.PCBreakStruct, error)
 	// 从mysql获取上次中断信息
 	pcbs, err := dao.MysqlProjDao.SelectPCBody(utils.GetUserTimeMysqlKey(pcbody))
 	if err != nil {
-		return "", nil, err
+		return "", nil, fmt.Errorf("startNextPC:%s", err)
 	}
 	if pcbs == nil {
 		return "", nil, nil
@@ -61,12 +61,15 @@ func (this *ProjServiceImp) SetPCBody(userid string, value *entity.PCBreakStruct
 	// 存放入mysql
 	_, err := dao.MysqlProjDao.InsertPCBody(utils.GetUserTimeMysqlKey(pcbody), value)
 	if err != nil {
-		return err
+		return fmt.Errorf("[Service]ProjServiceImp:SetPCBody:%s", err)
 	}
 	// 存放入redis进行排队
 	redikey := utils.GetWaitPCQueueKey()
 	err = dao.RedisCacheDao.SetPCBodyMsg(redikey, pcbody)
-	return err
+	if err != nil {
+		return fmt.Errorf("[Service]ProjServiceImp:SetPCBody:%s", err)
+	}
+	return nil
 }
 
 func (this *ProjServiceImp) CtrlPC() {
@@ -112,7 +115,7 @@ func (this *ProjServiceImp) CtrlPC() {
 func (this *ProjServiceImp) SetUserSubMsgNoRead(userid string, val []entity.PageTitleStruct) (int64, error) {
 	oldval, err := dao.MysqlWWWDao.SelectUserSubMsgNoRead(userid)
 	if err != nil {
-		return -1, err
+		return -1, fmt.Errorf("[Service]ProjServiceImp:SetUserSubMsgNoRead:%s", err)
 	}
 	if oldval == nil {
 		res := new(entity.UserSubMsgStruct)
@@ -130,7 +133,7 @@ func (this *ProjServiceImp) SetUserSubMsgNoRead(userid string, val []entity.Page
 func (this *ProjServiceImp) SetUserSubMsgReaded(userid string, val []entity.PageTitleStruct) (int64, error) {
 	oldval, err := dao.MysqlWWWDao.SelectUserSubMsgReaded(userid)
 	if err != nil {
-		return -1, err
+		return -1, fmt.Errorf("[Service]ProjServiceImp:SetUserSubMsgReaded:%s", err)
 	}
 	if oldval == nil {
 		res := new(entity.UserSubMsgStruct)

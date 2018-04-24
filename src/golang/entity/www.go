@@ -39,5 +39,3 @@ type PCQueueStruct struct {
 	Timest string `json:"timest"`
 	//Mysqlkey string `json:"mysqlkey"`
 }
-
-

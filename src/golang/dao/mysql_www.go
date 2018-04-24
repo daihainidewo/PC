@@ -3,10 +3,11 @@ package dao
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	_ "github.com/Go-SQL-Driver/MySQL"
 	"golang/entity"
-	"encoding/json"
+	"strings"
 )
 
 type MysqlWWWClientImp struct {
@@ -24,11 +25,11 @@ func NewWWWMysqlClient(driverName, dataSourceName string) *MysqlWWWClientImp {
 func (this *MysqlWWWClientImp) doSQL(sql string, args ...interface{}) (sql.Result, error) {
 	stmt, e := this.client.Prepare(sql)
 	if e != nil {
-		return nil, e
+		return nil, fmt.Errorf("doSQL:client.Prepare sql=%s, error=%s", sql, e)
 	}
 	res, err := stmt.Exec(args...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("doSQL:client.Prepare sql=%s, args=%s, error=%s", sql, args, err)
 	}
 	return res, nil
 }
@@ -36,14 +37,14 @@ func (this *MysqlWWWClientImp) doSQL(sql string, args ...interface{}) (sql.Resul
 func (this *MysqlWWWClientImp) doQuery(sql string, args ...interface{}) ([][]interface{}, error) {
 	rows, err := this.client.Query(sql, args...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("doQuery:client.Query sql=%s, args=%s, error=%s", sql, args, err)
 	}
 	if rows == nil {
 		return nil, nil
 	}
 	columns, err := rows.Columns()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("doQuery:rows.Columns error=%s", err)
 	}
 	length := len(columns)
 	ret := make([][]interface{}, 0)
@@ -55,7 +56,7 @@ func (this *MysqlWWWClientImp) doQuery(sql string, args ...interface{}) ([][]int
 	for rows.Next() {
 		err = rows.Scan(scanArgs...)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("doQuery:rows.Scan args=%s, error=%s", scanArgs, err)
 		}
 
 		temp := make([]interface{}, length)
@@ -77,7 +78,7 @@ func (this *MysqlWWWClientImp) InsertUserSubMsg(idkey string, value *[]entity.Us
 	sql := `insert into user_sub (user_sub_user_id, user_sub_sub_msg) value (?, ?)`
 	res, err := this.doSQL(sql, idkey, string(val))
 	if err != nil {
-		return -1, err
+		return -1, fmt.Errorf("[Dao]MysqlWWWClientImp:InsertUserSubMsg:%s", err)
 	}
 	return res.RowsAffected()
 }
@@ -89,7 +90,7 @@ func (this *MysqlWWWClientImp) UpdateUserSubMsg(idkey string, value *[]entity.Us
 	sql := `update user_sub set user_sub_sub_msg=? where user_sub_user_id=?`
 	res, err := this.doSQL(sql, string(val), idkey)
 	if err != nil {
-		return -1, err
+		return -1, fmt.Errorf("[Dao]MysqlWWWClientImp:UpdateUserSubMsg:%s", err)
 	}
 	return res.RowsAffected()
 }
@@ -99,12 +100,12 @@ func (this *MysqlWWWClientImp) SelectUserSubMsg(userid string) (*[]entity.User2S
 	sql := fmt.Sprintf(`SELECT user_sub_sub_msg FROM pachong.user_sub where user_sub_user_id=%s`, userid)
 	res, err := this.doQuery(sql)
 	if err != nil || len(res) == 0 {
-		return nil, err
+		return nil, fmt.Errorf("[Dao]MysqlWWWClientImp:SelectUserSubMsg:%s", err)
 	}
 	ret := new([]entity.User2SubStruct)
 	err = json.Unmarshal(res[0][0].([]byte), ret)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("[Dao]MysqlWWWClientImp:SelectUserSubMsg:json.Unmarshal val=%s, error=%s", res[0][0].(string), err)
 	}
 	return ret, nil
 }
@@ -114,7 +115,7 @@ func (this *MysqlWWWClientImp) InsertSubUserMsg(submsg, userids string) (int64, 
 	sql := `insert into pc_sub_user (pc_sub_user_sub, pc_sub_user_ids) values (?,?)`
 	res, err := this.doSQL(sql, submsg, userids)
 	if err != nil {
-		return -1, err
+		return -1, fmt.Errorf("[Dao]MysqlWWWClientImp:InsertSubUserMsg:%s", err)
 	}
 	return res.RowsAffected()
 }
@@ -124,7 +125,7 @@ func (this *MysqlWWWClientImp) SelectSubUserMsg(submsg string) (string, error) {
 	sql := `select pc_sub_user_ids from pachong.pc_sub_user where pc_sub_user_sub=?`
 	res, err := this.doQuery(sql, submsg)
 	if err != nil || len(res) == 0 {
-		return "", err
+		return "", fmt.Errorf("[Dao]MysqlWWWClientImp:SelectSubUserMsg:%s", err)
 	}
 	ret := string(res[0][0].([]byte))
 
@@ -137,9 +138,13 @@ func (this *MysqlWWWClientImp) SelectUserSubMsgReaded(userid string) (*entity.Us
 	sql := `SELECT user_sub_msg_readed_msg FROM pachong.user_sub_msg_read where user_sub_msg_read_userid=?`
 	res, err := this.doQuery(sql, userid)
 	if err != nil || len(res) == 0 {
-		return nil, err
+		return nil, fmt.Errorf("[Dao]MysqlWWWClientImp:SelectUserSubMsgReaded:%s", err)
 	}
-	return ret, json.Unmarshal(res[0][0].([]byte), ret)
+	err = json.Unmarshal(res[0][0].([]byte), ret)
+	if err != nil {
+		return nil, fmt.Errorf("[Dao]MysqlWWWClientImp:SelectUserSubMsgReaded:json.Unmarshal val=%s, error=%s", res[0][0].(string), err)
+	}
+	return ret, nil
 }
 
 // 获取未读消息
@@ -148,9 +153,85 @@ func (this *MysqlWWWClientImp) SelectUserSubMsgNoRead(userid string) (*entity.Us
 	sql := `SELECT user_sub_msg_no_read_msg FROM pachong.user_sub_msg_read where user_sub_msg_read_userid=?`
 	res, err := this.doQuery(sql, userid)
 	if err != nil || len(res) == 0 {
-		return nil, err
+		return nil, fmt.Errorf("[Dao]MysqlWWWClientImp:SelectUserSubMsgNoRead:%s", err)
 	}
-	return ret, json.Unmarshal(res[0][0].([]byte), ret)
+	err = json.Unmarshal(res[0][0].([]byte), ret)
+	if err != nil {
+		return nil, fmt.Errorf("[Dao]MysqlWWWClientImp:SelectUserSubMsgNoRead:json.Unmarshal val=%s, error=%s", res[0][0].(string), err)
+	}
+	return ret, nil
+}
+
+// 插入用户信息
+func (this *MysqlWWWClientImp) InsertUserMsg(userid, username, passwd string) (int64, error) {
+	sql := `insert into user (userid, username, userpasswd) values(?,?,?)`
+	res, err := this.doSQL(sql, userid, username, passwd)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "Error 1062: Duplicate") {
+			return 0, nil
+		}
+		return -1, fmt.Errorf("[Dao]MysqlWWWClientImp:InsertUserMsg:%s", err)
+	}
+	return res.RowsAffected()
+}
+
+// 更改用户信息
+func (this *MysqlWWWClientImp) UpdateUserMsgUsername(userid, username string) (int64, error) {
+	sql := `update user set username=? where userid=?`
+	res, err := this.doSQL(sql, username, userid)
+	if err != nil {
+		return -1, fmt.Errorf("[Dao]MysqlWWWClientImp:UpdateUserMsgUsername:%s", err)
+	}
+	return res.RowsAffected()
+}
+func (this *MysqlWWWClientImp) UpdateUserMsgUserpasswd(userid, userpasswd string) (int64, error) {
+	sql := `update user set userpasswd=? where userid=?`
+	res, err := this.doSQL(sql, userpasswd, userid)
+	if err != nil {
+		return -1, fmt.Errorf("[Dao]MysqlWWWClientImp:UpdateUserMsgUserpasswd:%s", err)
+	}
+	return res.RowsAffected()
+}
+
+func (this *MysqlWWWClientImp) SelectUserMsg(userid string) (string, string, error) {
+	sql := `SELECT username,userpasswd FROM pachong.user where userid=?`
+	res, err := this.doQuery(sql, userid)
+	if err != nil {
+		return "", "", fmt.Errorf("[Dao]MysqlWWWClientImp:SelectUserMsg:%s", err)
+	}
+	if res == nil {
+		return "", "", nil
+	}
+	username := res[0][0].(string)
+	userpasswd := res[0][1].(string)
+	return username, userpasswd, nil
+}
+
+// 查重用户名
+func (this *MysqlWWWClientImp) SelectUserSameName(username string) (bool, error) {
+	sql := `select userid from user where username=?`
+	res, err := this.doQuery(sql, username)
+	if err != nil {
+		return false, fmt.Errorf("[Dao]MysqlWWWClientImp:SelectUserSameName:%s", err)
+	}
+	if len(res) == 0 {
+		return false, nil
+	} else {
+		return true, nil
+	}
+}
+
+func (this *MysqlWWWClientImp) CheckUserNamePasswd(username, userpasswd string) (string, error) {
+	sql := `select userid from user where username=? and userpasswd=?`
+	res, err := this.doQuery(sql, username, userpasswd)
+	if err != nil {
+		return "", fmt.Errorf("[Dao]MysqlWWWClientImp:CheckUserNamePasswd:%s", err)
+	}
+	if res == nil {
+		return "", nil
+	}
+	return res[0][0].(string), nil
 }
 
 // 关闭mysql

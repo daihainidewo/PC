@@ -2,11 +2,11 @@
 package service
 
 import (
+	"fmt"
 	"golang/dao"
 	"golang/entity"
 	"golang/utils"
 	"time"
-	"fmt"
 )
 
 type WWWServiceImp struct{}
@@ -36,7 +36,7 @@ func (this *WWWServiceImp) SetUserSubMsg(userid, suburl, keyword, site, token st
 		*val = append(*val, temp)
 		_, err = dao.MysqlWWWDao.InsertUserSubMsg(userid, val)
 		if err != nil {
-			return err
+			return fmt.Errorf("[Service]WWWServiceImp:SetUserSubMsg:%s", err)
 		}
 	} else {
 		// 查重
@@ -48,7 +48,7 @@ func (this *WWWServiceImp) SetUserSubMsg(userid, suburl, keyword, site, token st
 		*val = append(*val, temp)
 		_, err = dao.MysqlWWWDao.UpdateUserSubMsg(userid, val)
 		if err != nil {
-			return err
+			return fmt.Errorf("[Service]WWWServiceImp:SetUserSubMsg:%s", err)
 		}
 	}
 	fmt.Println(temp)
@@ -87,7 +87,7 @@ func (this *WWWServiceImp) SetPCBody(userid, suburl, keyword, site, token string
 	val.PageTitleList2Slice = make([]string, 0)
 	err := ProjService.SetPCBody(userid, val)
 	if err != nil {
-		return err
+		return fmt.Errorf("[Service]WWWServiceImp:SetPCBody:%s", err)
 	}
 	return nil
 }
@@ -96,7 +96,7 @@ func (this *WWWServiceImp) SetPCBody(userid, suburl, keyword, site, token string
 func (this *WWWServiceImp) GetUserReaded(userid string) (*entity.UserSubMsgStruct, error) {
 	ret, err := dao.MysqlWWWDao.SelectUserSubMsgReaded(userid)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("[Service]WWWServiceImp:GetUserReaded:%s", err)
 	}
 	if ret.Userid == "" {
 		ret.Userid = userid
@@ -108,12 +108,55 @@ func (this *WWWServiceImp) GetUserReaded(userid string) (*entity.UserSubMsgStruc
 func (this *WWWServiceImp) GetUserNoread(userid string) (*entity.UserSubMsgStruct, error) {
 	ret, err := dao.MysqlWWWDao.SelectUserSubMsgNoRead(userid)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("[Service]WWWServiceImp:GetUserNoread:%s", err)
 	}
 	if ret.Userid == "" {
 		ret.Userid = userid
 	}
 	return ret, nil
+}
+
+// 设置用户信息
+func (this *WWWServiceImp) SetUserMsg(username, userpasswd string) (string, error) {
+	ok, err := dao.MysqlWWWDao.SelectUserSameName(username)
+	if err != nil {
+		return "", fmt.Errorf("[Service]WWWServiceImp:SetUserMsg:%s", err)
+	}
+	// 表示有相同的用户名
+	if ok {
+		return "", nil
+	}
+	userid := fmt.Sprintf("%d", time.Now().Nanosecond())[:7]
+	fmt.Println(userid)
+	_, err = dao.MysqlWWWDao.InsertUserMsg(userid, username, userpasswd)
+	return userid, err
+}
+
+// 用户修改相关信息
+func (this *WWWServiceImp) ChangeUserMsg(userid, username, userpasswd string) error {
+	if username != "" {
+		_, err := dao.MysqlWWWDao.UpdateUserMsgUsername(userid, username)
+		if err != nil {
+			return fmt.Errorf("[Service]WWWServiceImp:ChangeUserMsg:%s", err)
+		}
+	}
+	if userpasswd != "" {
+		_, err := dao.MysqlWWWDao.UpdateUserMsgUserpasswd(userid, userpasswd)
+		if err != nil {
+			return fmt.Errorf("[Service]WWWServiceImp:ChangeUserMsg:%s", err)
+		}
+	}
+	return nil
+}
+
+// 获取用户信息
+func (this *WWWServiceImp) GetUserMsg(userid string) (string, string, error) {
+	return dao.MysqlWWWDao.SelectUserMsg(userid)
+}
+
+// 检测用户名与密码是否匹配
+func (this *WWWServiceImp) CheckUser(username string, userpasswd string) (string, error) {
+	return dao.MysqlWWWDao.CheckUserNamePasswd(username, userpasswd)
 }
 
 func (this *WWWServiceImp) Close() {

@@ -6,6 +6,8 @@ package conf
 */
 // 配置文件信息
 type ConfStruct struct {
+	LogPath string `json:"log_path"` // 日志路径
+
 	StartPort               int    `json:"start_port"`
 	RedisAddr               string `json:"redis_addr"`
 	RedisPasswd             string `json:"redis_passwd"`

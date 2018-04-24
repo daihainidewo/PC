@@ -2,12 +2,12 @@
 package utils
 
 import (
-	"fmt"
-	"golang/entity"
 	"encoding/json"
+	"fmt"
+	"golang/conf"
+	"golang/entity"
 	"io/ioutil"
 	"net/url"
-	"golang/conf"
 )
 
 func ParseURL(u ...string) ([]string, error) {
@@ -33,6 +33,9 @@ func ReadConf(path string) (*conf.ConfStruct, error) {
 	err = json.Unmarshal([]byte(confstring), ret)
 	if err != nil {
 		return nil, err
+	}
+	if ret.LogPath == "" {
+
 	}
 	if ret.RedisAddr == "" {
 		ret.RedisAddr = "localhost:6379"
