@@ -14,6 +14,7 @@ import (
 	"golang/entity"
 	"container/list"
 	"sync"
+	"encoding/json"
 )
 
 func main() {
@@ -29,6 +30,13 @@ func main() {
 		fmt.Println(err)
 		return
 	}
+	// 打印配置文件信息
+	confstring, err := json.Marshal(conf)
+	if err != nil {
+		fmt.Println("配置文件错误，请检查错误，error：", err)
+		return
+	}
+	fmt.Println(string(confstring))
 	// 启动服务
 	service.WWWService = service.NewWWWService()
 	service.ProjService = service.NewProjService()

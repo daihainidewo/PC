@@ -94,12 +94,26 @@ func (this *WWWServiceImp) SetPCBody(userid, suburl, keyword, site, token string
 
 // 查看用户已读消息
 func (this *WWWServiceImp) GetUserReaded(userid string) (*entity.UserSubMsgStruct, error) {
-	return dao.MysqlWWWDao.SelectUserSubMsgReaded(userid)
+	ret, err := dao.MysqlWWWDao.SelectUserSubMsgReaded(userid)
+	if err != nil {
+		return nil, err
+	}
+	if ret.Userid == "" {
+		ret.Userid = userid
+	}
+	return ret, nil
 }
 
 // 查看用户未读消息
 func (this *WWWServiceImp) GetUserNoread(userid string) (*entity.UserSubMsgStruct, error) {
-	return dao.MysqlWWWDao.SelectUserSubMsgNoRead(userid)
+	ret, err := dao.MysqlWWWDao.SelectUserSubMsgNoRead(userid)
+	if err != nil {
+		return nil, err
+	}
+	if ret.Userid == "" {
+		ret.Userid = userid
+	}
+	return ret, nil
 }
 
 func (this *WWWServiceImp) Close() {
