@@ -2,9 +2,9 @@
 package utils
 
 import (
+	"fmt"
 	"net/http"
 	"time"
-	"fmt"
 )
 
 type HtmlCookie struct {

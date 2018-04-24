@@ -2,10 +2,10 @@
 package main
 
 import (
-	"net/http"
 	"fmt"
-	"runtime/debug"
 	"golang/utils"
+	"net/http"
+	"runtime/debug"
 )
 
 func StartRouter(port int) error {

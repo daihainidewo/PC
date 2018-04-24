@@ -2,10 +2,10 @@
 package utils
 
 import (
-	"sync"
 	"container/list"
-	"time"
 	"golang/entity"
+	"sync"
+	"time"
 )
 
 // 爬虫变量

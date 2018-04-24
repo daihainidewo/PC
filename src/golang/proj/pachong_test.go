@@ -2,14 +2,14 @@
 package proj
 
 import (
-	"testing"
-	"golang/utils"
-	"sync"
-	"fmt"
-	"time"
-	"strings"
 	"container/list"
+	"fmt"
 	"golang/entity"
+	"golang/utils"
+	"strings"
+	"sync"
+	"testing"
+	"time"
 )
 
 func startPC() {
@@ -269,12 +269,12 @@ func TestDownloadHtml(t *testing.T) {
 
 func TestStartPC(t *testing.T) {
 	startPC()
-	url := "https://blog.csdn.net/u013210620/article/details/79207145"  // 搜索起始url
-	keyword := ""                          // 全文搜索关键字
-	token := "blog.csdn.net/u013210620"        // 控制网站搜索域
-	userid := "1024"                       // 用户id
-	site := "https://blog.csdn.net" // 搜索站点
-	titleKeyword := make([]string, 0)      // 标题关键字
+	url := "https://blog.csdn.net/u013210620/article/details/79207145" // 搜索起始url
+	keyword := ""                                                      // 全文搜索关键字
+	token := "blog.csdn.net/u013210620"                                // 控制网站搜索域
+	userid := "1024"                                                   // 用户id
+	site := "https://blog.csdn.net"                                    // 搜索站点
+	titleKeyword := make([]string, 0)                                  // 标题关键字
 	//titleKeyword = append(titleKeyword, "c++")
 	//titleKeyword = append(titleKeyword, "面经")
 	keyword = strings.ToLower(keyword)
