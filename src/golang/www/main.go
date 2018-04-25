@@ -5,6 +5,7 @@ import (
 	"container/list"
 	"encoding/json"
 	"fmt"
+	"golang/conf"
 	"golang/dao"
 	"golang/entity"
 	"golang/proj"
@@ -15,6 +16,7 @@ import (
 	"sync"
 	"syscall"
 	"time"
+	"golang/logger"
 )
 
 func main() {
@@ -25,24 +27,33 @@ func main() {
 		return
 	}
 	confPath = os.Args[1]
-	conf, err := utils.ReadConf(confPath)
+	var err error
+	conf.Conf, err = utils.ReadConf(confPath)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	// 打印配置文件信息
-	confstring, err := json.Marshal(conf)
+	confstring, err := json.Marshal(conf.Conf)
 	if err != nil {
 		fmt.Println("配置文件错误，请检查错误，error：", err)
 		return
 	}
 	// 设置进程日志
-	if conf.LogPath != "" {
-		logf, err := os.OpenFile(conf.LogPath, os.O_WRONLY|os.O_CREATE|os.O_SYNC, 0755)
-		if err != nil {
-			fmt.Println("读取日志文件错误，error：", err)
-		}
-		os.Stdout = logf
+	if conf.Conf.LogPath != "" {
+		tick := time.NewTicker(1 * time.Hour)
+		go func() {
+			for range tick.C {
+				logpath := utils.GetCurLogPath(conf.Conf.LogPath)
+				logf, err := os.OpenFile(logpath, os.O_WRONLY|os.O_CREATE|os.O_SYNC, 0755)
+				if err != nil {
+					fmt.Println("读取日志文件错误，error：", err)
+				}
+				utils.LogFile = logf
+			}
+		}()
+	} else {
+		utils.LogFile = os.Stdout
 	}
 	// 启动服务
 	service.WWWService = service.NewWWWService()
@@ -50,9 +61,9 @@ func main() {
 
 	proj.PCService = proj.NewPCInit()
 
-	dao.RedisCacheDao = dao.NewRedisCache(conf.RedisAddr, conf.RedisPasswd, conf.RedisDB)
-	dao.MysqlProjDao = dao.NewProjMysqlClient(conf.MysqlProjDriverName, conf.MysqlProjDataSourceName)
-	dao.MysqlWWWDao = dao.NewWWWMysqlClient(conf.MysqlWWWDriverName, conf.MysqlWWWDataSourceName)
+	dao.RedisCacheDao = dao.NewRedisCache(conf.Conf.RedisAddr, conf.Conf.RedisPasswd, conf.Conf.RedisDB)
+	dao.MysqlProjDao = dao.NewProjMysqlClient(conf.Conf.MysqlProjDriverName, conf.Conf.MysqlProjDataSourceName)
+	dao.MysqlWWWDao = dao.NewWWWMysqlClient(conf.Conf.MysqlWWWDriverName, conf.Conf.MysqlWWWDataSourceName)
 
 	defer func() {
 		dao.RedisCacheDao.Close()
@@ -64,12 +75,12 @@ func main() {
 	utils.Htmlcookie = utils.NewHtmlCookie()
 
 	// 初始化变量
-	utils.SUBSCRIBENUM = conf.SubscribeNum
-	utils.PROJECTNUM = conf.ProjectNum
-	utils.PACOUNT = conf.PaCount
-	utils.NONEDATASLEEPTIME = time.Duration(conf.NoneDataSleepTime) * time.Millisecond
-	utils.COOKIEEXPIRE = time.Duration(conf.CookieExpire) * time.Second
-	utils.PATIME = conf.PaTime
+	utils.SUBSCRIBENUM = conf.Conf.SubscribeNum
+	utils.PROJECTNUM = conf.Conf.ProjectNum
+	utils.PACOUNT = conf.Conf.PaCount
+	utils.NONEDATASLEEPTIME = time.Duration(conf.Conf.NoneDataSleepTime) * time.Millisecond
+	utils.COOKIEEXPIRE = time.Duration(conf.Conf.CookieExpire) * time.Second
+	utils.PATIME = conf.Conf.PaTime
 
 	utils.SubUserMap = make(map[entity.UserSubStruct][]string)
 	utils.UserSubMap = make(map[string][]entity.UserSubStruct)
@@ -83,10 +94,10 @@ func main() {
 
 	signCh := make(chan os.Signal)
 	signal.Notify(signCh, os.Interrupt, os.Kill, syscall.SIGTERM)
-	go StartRouter(conf.StartPort)
-	fmt.Println("server start, port:", conf.StartPort)
+	go StartRouter(conf.Conf.StartPort)
+	logger.Println("server start, port:", conf.Conf.StartPort)
 	fmt.Println(string(confstring))
 
 	<-signCh
-	fmt.Println("server end")
+	logger.Println("server end")
 }

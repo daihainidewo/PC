@@ -2,7 +2,6 @@
 package main
 
 import (
-	"fmt"
 	"golang/service"
 	"golang/utils"
 	"io/ioutil"
@@ -10,10 +9,11 @@ import (
 	"os"
 	"strings"
 	"time"
+	"golang/logger"
 )
 
 func indexNoLogin(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("get index no login", time.Now())
+	logger.Println("get index no login", time.Now())
 	ret := `<a href="/user/login">用户请登录</a>`
 	w.Write([]byte(ret))
 	return
@@ -21,14 +21,14 @@ func indexNoLogin(w http.ResponseWriter, r *http.Request) {
 
 func userLogin(w http.ResponseWriter, r *http.Request) {
 	defer errorReport("userLogin", w)
-	fmt.Println("get /user/login", time.Now())
+	logger.Println("get /user/login", time.Now())
 	r.ParseForm()
-	username := r.Form.Get("username")
-	password := r.Form.Get("passwd")
+	username := r.PostForm.Get("username")
+	password := r.PostForm.Get("passwd")
 	// 验证用户正确性
 	userid, err := service.WWWService.CheckUser(username, password)
 	if err != nil {
-		fmt.Println(err)
+		logger.Println(err)
 		res := utils.RespJson(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "系统错误")
 		w.Write(res)
 		return
@@ -38,19 +38,20 @@ func userLogin(w http.ResponseWriter, r *http.Request) {
 		w.Write(res)
 		return
 	}
-	fmt.Println(username, password)
+	logger.Println(username, password)
 
 	res := utils.RespJson(utils.SUCCESS, utils.RespMsg[utils.SUCCESS], userid)
 	w.Write(res)
 }
 
 func userZhuce(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("get /user/zhuce", time.Now())
+	defer errorReport("userZhuce", w)
+	logger.Println("get /user/zhuce", time.Now())
 	r.ParseForm()
-	username := r.Form.Get("username")
-	passwd := r.Form.Get("password")
+	username := r.PostForm.Get("username")
+	passwd := r.PostForm.Get("password")
 	// 存入mysql中
-	fmt.Println(username, passwd)
+	logger.Println(username, passwd)
 	userid, err := service.WWWService.SetUserMsg(username, passwd)
 	if err != nil {
 		res := utils.RespJson(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "系统错误")
@@ -67,11 +68,12 @@ func userZhuce(w http.ResponseWriter, r *http.Request) {
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("get /index", time.Now())
+	defer errorReport("index", w)
+	logger.Println("get /index", time.Now())
 	//
 	//cookie, err1 := utils.Htmlcookie.ReadCookie(r, "userid")
 	//if err1 != nil {
-	//	fmt.Println(err1)
+	//	logger.Println(err1)
 	//}
 	//if cookie == "" { // 没有cookie，用户需要登录
 	//	indexNoLogin(w, r)
@@ -80,20 +82,21 @@ func index(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
 	//user := r.PostForm.Get("user")
-	//fmt.Println(user)
+	//logger.Println(user)
 	fp, err := os.Open("html\\index.html")
 	if err != nil {
-		fmt.Println(err)
+		logger.Println(err)
 	}
 	html, err1 := ioutil.ReadAll(fp)
 	if err1 != nil {
-		fmt.Println(err1)
+		logger.Println(err1)
 	}
 	w.Write(html)
 }
 
 func userSub(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("get /userSub", time.Now())
+	defer errorReport("userSub", w)
+	logger.Println("get /userSub", time.Now())
 	r.ParseForm()
 	userid := r.Form.Get("userid")
 	suburl := r.Form.Get("suburl")
@@ -118,7 +121,7 @@ func userSub(w http.ResponseWriter, r *http.Request) {
 	}
 	err := service.WWWService.SetUserSubMsg(userid, suburl, keyword, site, token, titlekeyword)
 	if err != nil {
-		fmt.Println(err)
+		logger.Println(err)
 		res := utils.RespJson(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "系统错误")
 		w.Write(res)
 		return
@@ -128,7 +131,8 @@ func userSub(w http.ResponseWriter, r *http.Request) {
 }
 
 func userGetSub(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("get /userGetSub", time.Now())
+	defer errorReport("userGetSub", w)
+	logger.Println("get /userGetSub", time.Now())
 	r.ParseForm()
 	userid := r.Form.Get("userid")
 	if userid == "" {
@@ -148,7 +152,8 @@ func userGetSub(w http.ResponseWriter, r *http.Request) {
 }
 
 func userReaded(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("get /userReaded", time.Now())
+	defer errorReport("userReaded", w)
+	logger.Println("get /userReaded", time.Now())
 	r.ParseForm()
 	userid := r.Form.Get("userid")
 	if userid == "" {
@@ -168,7 +173,8 @@ func userReaded(w http.ResponseWriter, r *http.Request) {
 }
 
 func userNoread(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("get /userNoread", time.Now())
+	defer errorReport("userNoread", w)
+	logger.Println("get /userNoread", time.Now())
 	r.ParseForm()
 	userid := r.Form.Get("userid")
 	if userid == "" {
@@ -183,6 +189,26 @@ func userNoread(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	res := utils.RespJson(utils.SUCCESS, utils.RespMsg[utils.SUCCESS], ret)
+	w.Write(res)
+}
+
+func userReadMsg(w http.ResponseWriter, r *http.Request) {
+	defer errorReport("userReadMsg", w)
+	logger.Println("/user/readmsg", time.Now())
+	r.ParseForm()
+	userid := r.Form.Get("userid")
+	if userid == "" {
+		res := utils.RespJson(utils.INVALID_PARAMS, utils.RespMsg[utils.INVALID_PARAMS], "非法参数")
+		w.Write(res)
+		return
+	}
+	ret, err := service.WWWService.GetUserReadMsg(userid)
+	if err != nil {
+		res := utils.RespJson(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "系统错误")
+		w.Write(res)
+		return
+	}
 	res := utils.RespJson(utils.SUCCESS, utils.RespMsg[utils.SUCCESS], ret)
 	w.Write(res)
 }

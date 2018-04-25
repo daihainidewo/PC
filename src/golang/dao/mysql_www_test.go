@@ -2,8 +2,8 @@
 package dao
 
 import (
-	"testing"
 	"fmt"
+	"testing"
 )
 
 func startTest() {

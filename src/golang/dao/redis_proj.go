@@ -47,7 +47,11 @@ func (this *RedisCacheImp) SetPCBodyMsg(key string, val *entity.PCQueueStruct) e
 	if err != nil {
 		return fmt.Errorf("[Dao]RedisCacheImp:SetPCBodyMsg:json.Marshal data=%s, error=%s", val, err)
 	}
-	return fmt.Errorf("[Dao]RedisCacheImp:SetPCBodyMsg:client.RPush key=%s, val=%s, error=%s", key, string(ret), this.client.RPush(key, string(ret)).Err())
+	err = this.client.RPush(key, string(ret)).Err()
+	if err != nil {
+		return fmt.Errorf("[Dao]RedisCacheImp:SetPCBodyMsg:client.RPush key=%s, val=%s, error=%s", key, string(ret), err)
+	}
+	return nil
 }
 
 // 关闭redis

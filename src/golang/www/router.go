@@ -2,10 +2,12 @@
 package main
 
 import (
-	"net/http"
 	"fmt"
-	"runtime/debug"
+	"golang/conf"
 	"golang/utils"
+	"net/http"
+	"runtime/debug"
+	"golang/logger"
 )
 
 func StartRouter(port int) error {
@@ -16,6 +18,8 @@ func StartRouter(port int) error {
 	http.HandleFunc("/user/getsub", userGetSub)
 	http.HandleFunc("/user/readed", userReaded)
 	http.HandleFunc("/user/noread", userNoread)
+	http.HandleFunc("/user/readmsg", userReadMsg)
+
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 	return err
 }
@@ -23,8 +27,11 @@ func StartRouter(port int) error {
 // 防止程序挂掉
 func errorReport(action string, w http.ResponseWriter) {
 	if v := recover(); v != nil {
+		if conf.Conf.LogLevel == "debug" {
+			return
+		}
 		debug.PrintStack()
-		fmt.Println("发生意外错误")
+		logger.Println("发生意外错误")
 		res := utils.RespJson(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "")
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(res)

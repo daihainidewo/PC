@@ -1,6 +1,7 @@
 {
   "//": {
-    "log_path": "服务日志文件，默认标准输出",
+    "log_path": "服务日志文件路径，默认标准输出",
+    "log_level": "日志模式，分为debug和info",
     "start_port": "服务器启动端口",
     "redis_addr": "redis服务地址",
     "mysql_data_source_name": "mysql服务器地址",
@@ -12,6 +13,7 @@
     "cookie_expire": "cookie过期时间，单位秒"
   },
   "log_path": "",
+  "log_level": "debug",
   "start_port": 8080,
   "redis_addr": "127.0.0.1:6379",
   "redis_passwd": "",

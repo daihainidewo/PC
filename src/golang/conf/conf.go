@@ -6,7 +6,8 @@ package conf
 */
 // 配置文件信息
 type ConfStruct struct {
-	LogPath string `json:"log_path"` // 日志路径
+	LogPath  string `json:"log_path"`  // 日志路径
+	LogLevel string `json:"log_level"` // 日志等级
 
 	StartPort               int    `json:"start_port"`
 	RedisAddr               string `json:"redis_addr"`
@@ -24,3 +25,5 @@ type ConfStruct struct {
 	NoneDataSleepTime int   `json:"none_data_sleep_time"` // 单位是微秒
 	CookieExpire      int   `json:"cookie_expire"`        // 单位是秒
 }
+
+var Conf *ConfStruct

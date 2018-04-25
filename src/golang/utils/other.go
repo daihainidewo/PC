@@ -8,6 +8,9 @@ import (
 	"golang/entity"
 	"io/ioutil"
 	"net/url"
+	"strings"
+	"time"
+	"os"
 )
 
 func ParseURL(u ...string) ([]string, error) {
@@ -34,8 +37,15 @@ func ReadConf(path string) (*conf.ConfStruct, error) {
 	if err != nil {
 		return nil, err
 	}
-	if ret.LogPath == "" {
-
+	if ret.LogPath != "" {
+		f, err := os.Stat(ret.LogPath)
+		if err != nil || !f.IsDir() {
+			return nil, fmt.Errorf("请输入正确的日志文件夹路径")
+		}
+	}
+	ret.LogLevel = strings.ToLower(ret.LogLevel)
+	if ret.LogLevel == "" {
+		ret.LogLevel = "debug"
 	}
 	if ret.RedisAddr == "" {
 		ret.RedisAddr = "localhost:6379"
@@ -91,4 +101,22 @@ func User2SubStructIsEqual(a, b entity.User2SubStruct) bool {
 		return true
 	}
 	return false
+}
+
+func GetCurLogPath(baseLogPath string) string {
+	t := time.Now()
+	dirpath := fmt.Sprintf("%s%s", baseLogPath, t.Format("/2006/01/02"))
+	logpath := fmt.Sprintf("%s%s.logger", baseLogPath, t.Format("/2006/01/02/15"))
+	if _, err := os.Stat(logpath); err == nil {
+		return logpath
+	} else {
+		if _, err := os.Stat(dirpath); err != nil {
+			err := os.MkdirAll(dirpath, 0755)
+			if err != nil {
+				fmt.Println("创建日志文件夹失败", err)
+				return ""
+			}
+		}
+	}
+	return logpath
 }

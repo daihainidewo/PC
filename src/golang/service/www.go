@@ -126,7 +126,7 @@ func (this *WWWServiceImp) SetUserMsg(username, userpasswd string) (string, erro
 	if ok {
 		return "", nil
 	}
-	userid := fmt.Sprintf("%d", time.Now().Nanosecond())[:7]
+	userid := fmt.Sprintf("%d", time.Now().UnixNano())[:7]
 	fmt.Println(userid)
 	_, err = dao.MysqlWWWDao.InsertUserMsg(userid, username, userpasswd)
 	return userid, err
@@ -157,6 +157,33 @@ func (this *WWWServiceImp) GetUserMsg(userid string) (string, string, error) {
 // 检测用户名与密码是否匹配
 func (this *WWWServiceImp) CheckUser(username string, userpasswd string) (string, error) {
 	return dao.MysqlWWWDao.CheckUserNamePasswd(username, userpasswd)
+}
+
+func (this *WWWServiceImp) GetUserReadMsg(userid string) (*entity.UserSubMsgStruct, error) {
+	data, err := dao.MysqlWWWDao.SelectUserSubMsgNoRead(userid)
+	if err != nil {
+		return nil, fmt.Errorf("[Service]WWWServiceImp:GetUserReadMsg:%s", err)
+	}
+	readed, err := dao.MysqlWWWDao.SelectUserSubMsgReaded(userid)
+	if err != nil {
+		return nil, fmt.Errorf("[Service]WWWServiceImp:GetUserReadMsg:%s", err)
+	}
+	if readed != nil {
+		readed = data
+	} else {
+		for _, d := range data.SubMsg {
+			readed.SubMsg = append(readed.SubMsg, d)
+		}
+	}
+	_, err = dao.MysqlWWWDao.UpdateUserSubMsgReaded(readed)
+	if err != nil {
+		return nil, fmt.Errorf("[Service]WWWServiceImp:GetUserReadMsg:%s", err)
+	}
+	_, err = dao.MysqlWWWDao.DelectUserSubMsgNoRead(userid)
+	if err != nil {
+		return nil, fmt.Errorf("[Service]WWWServiceImp:GetUserReadMsg:%s", err)
+	}
+	return data, nil
 }
 
 func (this *WWWServiceImp) Close() {

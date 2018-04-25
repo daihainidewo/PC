@@ -4,4 +4,3 @@ package dao
 func newMysqlProjTest() {
 	MysqlProjDao = NewProjMysqlClient("mysql", "root:DHdh,.1234@tcp(localhost:3306)/pachong?charset=utf8")
 }
-

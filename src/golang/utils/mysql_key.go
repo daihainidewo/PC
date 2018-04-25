@@ -2,8 +2,8 @@
 package utils
 
 import (
-	"golang/entity"
 	"fmt"
+	"golang/entity"
 	"strings"
 )
 

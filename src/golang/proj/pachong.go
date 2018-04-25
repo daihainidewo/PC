@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"golang/logger"
 )
 
 type PC struct {
@@ -24,13 +25,13 @@ func NewPCInit() *PC {
 func (this *PC) downloadHtml(url string) string {
 	resp, err := http.Get(url)
 	if err != nil {
-		fmt.Println(err)
+		logger.Println(err)
 		return ""
 	}
 	defer resp.Body.Close()
 	content, err1 := ioutil.ReadAll(resp.Body)
 	if err1 != nil {
-		fmt.Println(err1)
+		logger.Println(err1)
 		return ""
 	}
 	html := string(content)
@@ -55,7 +56,7 @@ func (this *PC) parseHtml(passtoken entity.PageSiteTokeStruct, msg entity.PageTi
 
 	re := regexp.MustCompile(`(?is:<title>(.*?)</title>)`)
 	res := re.FindAllStringSubmatch(html, 1)
-	//fmt.Println(msg.URL)
+	//logger.Println(msg.URL)
 	if len(res) == 0 {
 		return nil
 	}
@@ -69,7 +70,7 @@ func (this *PC) parseHtml(passtoken entity.PageSiteTokeStruct, msg entity.PageTi
 		if strings.Contains(msg.URL, "category") || strings.Contains(msg.URL, "month") || strings.Contains(msg.URL, "page") {
 			// 这里可以做成自定义的
 		} else {
-			//fmt.Println("这个是用户订阅的网页，title:", temp.Title, "url:", msg.URL)
+			//logger.Println("这个是用户订阅的网页，title:", temp.Title, "url:", msg.URL)
 			tempret := entity.PageTitleStruct{Title: temp.Title, URL: msg.URL}
 			utils.UserSubUrl = append(utils.UserSubUrl, tempret)
 		}
@@ -113,7 +114,7 @@ func (this *PC) parseHtml(passtoken entity.PageSiteTokeStruct, msg entity.PageTi
 				if strings.Contains(link[2], ":") {
 					continue
 				}
-				fmt.Println("非法的URL：", link[2], "原网页url：", msg.URL)
+				logger.Println("非法的URL：", link[2], "原网页url：", msg.URL)
 				continue
 			}
 		}
@@ -125,7 +126,7 @@ func (this *PC) parseHtml(passtoken entity.PageSiteTokeStruct, msg entity.PageTi
 		temp.URL = strings.Split(temp.URL, "?")[0]
 		ret = append(ret, entity.PageTitleStruct{"", temp.URL})
 	}
-	//fmt.Println("end",len(ret))
+	//logger.Println("end",len(ret))
 	return ret
 }
 
@@ -168,7 +169,7 @@ func (this *PC) trimHtml(src string) string {
 	//去除连续的换行符
 	re, _ = regexp.Compile("\\s{2,}")
 	src = re.ReplaceAllString(src, "\n")
-	//fmt.Println(time.Now())
+	//logger.Println(time.Now())
 
 	return strings.TrimSpace(src)
 }
@@ -193,13 +194,13 @@ func (this *PC) StartPC(url, keyword, site, token, userid string, titleKeyword [
 			starttime := time.Now().Unix()
 			for {
 				if time.Now().Unix()-starttime > utils.PATIME {
-					//fmt.Println("break one")
+					//logger.Println("break one")
 					break
 				}
 				countsm.Lock()
 				ele := utils.PageTitleList.Front()
 				if ele == nil || ele.Value == nil {
-					//fmt.Println("ele is nil", utils.PageTitleList.Len())
+					//logger.Println("ele is nil", utils.PageTitleList.Len())
 					time.Sleep(utils.NONEDATASLEEPTIME)
 					countsm.Unlock()
 					continue
@@ -230,7 +231,7 @@ func (this *PC) StartPC(url, keyword, site, token, userid string, titleKeyword [
 
 				scancount++
 				if scancount > utils.PACOUNT {
-					//fmt.Println("break one")
+					//logger.Println("break one")
 					break
 				}
 			}

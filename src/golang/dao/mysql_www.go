@@ -8,6 +8,7 @@ import (
 	_ "github.com/Go-SQL-Driver/MySQL"
 	"golang/entity"
 	"strings"
+	"golang/logger"
 )
 
 type MysqlWWWClientImp struct {
@@ -17,6 +18,7 @@ type MysqlWWWClientImp struct {
 func NewWWWMysqlClient(driverName, dataSourceName string) *MysqlWWWClientImp {
 	db, err := sql.Open(driverName, dataSourceName)
 	if err != nil {
+		logger.Println(err)
 		return nil
 	}
 	return &MysqlWWWClientImp{client: db}
@@ -99,8 +101,11 @@ func (this *MysqlWWWClientImp) UpdateUserSubMsg(idkey string, value *[]entity.Us
 func (this *MysqlWWWClientImp) SelectUserSubMsg(userid string) (*[]entity.User2SubStruct, error) {
 	sql := fmt.Sprintf(`SELECT user_sub_sub_msg FROM pachong.user_sub where user_sub_user_id=%s`, userid)
 	res, err := this.doQuery(sql)
-	if err != nil || len(res) == 0 {
+	if err != nil {
 		return nil, fmt.Errorf("[Dao]MysqlWWWClientImp:SelectUserSubMsg:%s", err)
+	}
+	if len(res) == 0 {
+		return nil, nil
 	}
 	ret := new([]entity.User2SubStruct)
 	err = json.Unmarshal(res[0][0].([]byte), ret)
@@ -124,8 +129,11 @@ func (this *MysqlWWWClientImp) InsertSubUserMsg(submsg, userids string) (int64, 
 func (this *MysqlWWWClientImp) SelectSubUserMsg(submsg string) (string, error) {
 	sql := `select pc_sub_user_ids from pachong.pc_sub_user where pc_sub_user_sub=?`
 	res, err := this.doQuery(sql, submsg)
-	if err != nil || len(res) == 0 {
+	if err != nil {
 		return "", fmt.Errorf("[Dao]MysqlWWWClientImp:SelectSubUserMsg:%s", err)
+	}
+	if len(res) == 0 {
+		return "", nil
 	}
 	ret := string(res[0][0].([]byte))
 
@@ -137,8 +145,11 @@ func (this *MysqlWWWClientImp) SelectUserSubMsgReaded(userid string) (*entity.Us
 	ret := new(entity.UserSubMsgStruct)
 	sql := `SELECT user_sub_msg_readed_msg FROM pachong.user_sub_msg_read where user_sub_msg_read_userid=?`
 	res, err := this.doQuery(sql, userid)
-	if err != nil || len(res) == 0 {
+	if err != nil {
 		return nil, fmt.Errorf("[Dao]MysqlWWWClientImp:SelectUserSubMsgReaded:%s", err)
+	}
+	if len(res) == 0 {
+		return nil, nil
 	}
 	err = json.Unmarshal(res[0][0].([]byte), ret)
 	if err != nil {
@@ -152,8 +163,11 @@ func (this *MysqlWWWClientImp) SelectUserSubMsgNoRead(userid string) (*entity.Us
 	ret := new(entity.UserSubMsgStruct)
 	sql := `SELECT user_sub_msg_no_read_msg FROM pachong.user_sub_msg_read where user_sub_msg_read_userid=?`
 	res, err := this.doQuery(sql, userid)
-	if err != nil || len(res) == 0 {
+	if err != nil {
 		return nil, fmt.Errorf("[Dao]MysqlWWWClientImp:SelectUserSubMsgNoRead:%s", err)
+	}
+	if len(res) == 0 {
+		return nil, nil
 	}
 	err = json.Unmarshal(res[0][0].([]byte), ret)
 	if err != nil {
@@ -194,6 +208,7 @@ func (this *MysqlWWWClientImp) UpdateUserMsgUserpasswd(userid, userpasswd string
 	return res.RowsAffected()
 }
 
+// 获取用户信息
 func (this *MysqlWWWClientImp) SelectUserMsg(userid string) (string, string, error) {
 	sql := `SELECT username,userpasswd FROM pachong.user where userid=?`
 	res, err := this.doQuery(sql, userid)
@@ -222,6 +237,7 @@ func (this *MysqlWWWClientImp) SelectUserSameName(username string) (bool, error)
 	}
 }
 
+// 检测用户名和密码是否匹配
 func (this *MysqlWWWClientImp) CheckUserNamePasswd(username, userpasswd string) (string, error) {
 	sql := `select userid from user where username=? and userpasswd=?`
 	res, err := this.doQuery(sql, username, userpasswd)
@@ -232,6 +248,30 @@ func (this *MysqlWWWClientImp) CheckUserNamePasswd(username, userpasswd string) 
 		return "", nil
 	}
 	return res[0][0].(string), nil
+}
+
+// 清空用户未读订阅消息
+func (this *MysqlWWWClientImp) DelectUserSubMsgNoRead(userid string) (int64, error) {
+	sql := `update user_sub_msg_read set user_sub_msg_no_read_msg='{}' where user_sub_msg_read_userid=?`
+	res, err := this.doSQL(sql, userid)
+	if err != nil {
+		return -1, fmt.Errorf("[Dao]MysqlWWWClientImp:CheckUserNamePasswd:%s", err)
+	}
+	return res.RowsAffected()
+}
+
+// 更新用户已读消息
+func (this *MysqlWWWClientImp) UpdateUserSubMsgReaded(val *entity.UserSubMsgStruct) (int64, error) {
+	ret, err := json.Marshal(val)
+	if err != nil {
+		return -1, err
+	}
+	sql := `update user_sub_msg_read set user_sub_msg_readed_msg=? where user_sub_msg_read_userid=?`
+	res, err := this.doSQL(sql, string(ret), val.Userid)
+	if err != nil {
+		return -1, fmt.Errorf("[Dao]MysqlWWWClientImp:UpdateUserSubMsgReaded:%s", err)
+	}
+	return res.RowsAffected()
 }
 
 // 关闭mysql

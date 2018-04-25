@@ -24,6 +24,8 @@ type IMysqlWWWDao interface {
 	UpdateUserMsgUsername(userid, username string) (int64, error)
 	SelectUserMsg(userid string) (string, string, error)
 	SelectUserSameName(username string) (bool, error)
+	UpdateUserSubMsgReaded(val *entity.UserSubMsgStruct) (int64, error)
+	DelectUserSubMsgNoRead(userid string) (int64, error)
 	CheckUserNamePasswd(username, userpasswd string) (string, error)
 	Close()
 }
@@ -38,6 +40,7 @@ type IMysqlProjDao interface {
 	InsertUserSubMsgNoRead(userid string, value *entity.UserSubMsgStruct) (int64, error)
 	UpdateUserSubMsgNoRead(userid string, value *entity.UserSubMsgStruct) (int64, error)
 	Close()
+	DeletePCBody(userid_timest string) (int64, error)
 }
 
 var MysqlProjDao IMysqlProjDao

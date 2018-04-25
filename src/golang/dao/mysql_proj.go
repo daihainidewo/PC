@@ -7,6 +7,7 @@ import (
 	"fmt"
 	_ "github.com/Go-SQL-Driver/MySQL"
 	"golang/entity"
+	"golang/logger"
 )
 
 type MysqlProjClientImp struct {
@@ -16,7 +17,8 @@ type MysqlProjClientImp struct {
 func NewProjMysqlClient(driverName, dataSourceName string) *MysqlProjClientImp {
 	db, err := sql.Open(driverName, dataSourceName)
 	if err != nil {
-		fmt.Println(err)
+		logger.Println(err)
+		return nil
 	}
 	return &MysqlProjClientImp{client: db}
 }
@@ -86,10 +88,12 @@ func (this *MysqlProjClientImp) InsertPCBody(userid_timest string, value *entity
 func (this *MysqlProjClientImp) SelectPCBody(userid_timest string) (*entity.PCBreakStruct, error) {
 	sql := `select pc_body_msg_body from pachong.pc_body_msg where pc_body_msg_user_id=?`
 	res, err := this.doQuery(sql, userid_timest)
-	if err != nil || len(res) == 0 {
+	if err != nil {
 		return nil, fmt.Errorf("[Dao]MysqlProjClientImp:SelectPCBody:%s", err)
 	}
-
+	if len(res) == 0 {
+		return nil, nil
+	}
 	jsonstr := res[0][0].([]byte)
 
 	ret := new(entity.PCBreakStruct)
@@ -156,6 +160,15 @@ func (this *MysqlProjClientImp) UpdateUserSubMsgNoRead(userid string, value *ent
 		return -1, fmt.Errorf("[Dao]MysqlProjClientImp:UpdateUserSubMsgNoRead:%s", err)
 	}
 	return ret.RowsAffected()
+}
+
+func (this *MysqlProjClientImp) DeletePCBody(userid_timest string) (int64, error) {
+	sql := `DELETE FROM user_sub WHERE user_sub_user_id=?`
+	res, err := this.doSQL(sql, userid_timest)
+	if err != nil {
+		return -1, fmt.Errorf("[Dao]MysqlProjClientImp:DeletePCBody:%s", err)
+	}
+	return res.RowsAffected()
 }
 
 // 关闭mysql

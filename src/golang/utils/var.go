@@ -2,10 +2,11 @@
 package utils
 
 import (
-	"sync"
 	"container/list"
-	"time"
 	"golang/entity"
+	"sync"
+	"time"
+	"os"
 )
 
 // 爬虫变量
@@ -32,4 +33,9 @@ var (
 var (
 	COOKIEEXPIRE time.Duration // cookie过期时间
 	Htmlcookie   *HtmlCookie   // 网页cookie
+)
+
+// 系统变量
+var (
+	LogFile *os.File // 日志文件
 )

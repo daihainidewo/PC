@@ -7,7 +7,9 @@ import (
 	"golang/entity"
 	"golang/proj"
 	"golang/utils"
+	"strings"
 	"time"
+	"golang/logger"
 )
 
 type ProjServiceImp struct {
@@ -28,8 +30,8 @@ func (this *ProjServiceImp) startNextPC() (string, *entity.PCBreakStruct, error)
 	if pcbody == nil {
 		return "", nil, nil
 	}
-	fmt.Println("get new")
-	fmt.Println(pcbody)
+	logger.Println("get new")
+	logger.Println(pcbody)
 	// 从mysql获取上次中断信息
 	pcbs, err := dao.MysqlProjDao.SelectPCBody(utils.GetUserTimeMysqlKey(pcbody))
 	if err != nil {
@@ -37,6 +39,11 @@ func (this *ProjServiceImp) startNextPC() (string, *entity.PCBreakStruct, error)
 	}
 	if pcbs == nil {
 		return "", nil, nil
+	}
+	// 清除本次信息
+	_, err = dao.MysqlProjDao.DeletePCBody(utils.GetUserTimeMysqlKey(pcbody))
+	if err != nil {
+		return "", nil, fmt.Errorf("startNextPC:%s", err)
 	}
 	// 载入内存
 	for _, l := range pcbs.PageTitleList2Slice {
@@ -77,33 +84,33 @@ func (this *ProjServiceImp) CtrlPC() {
 	go func() {
 		for {
 			time.Sleep(1 * time.Second)
-			fmt.Println("the next pc")
+			logger.Println("the next pc")
 			utils.UserSubUrl = make([]entity.PageTitleStruct, 0)
 			// 准备下一个爬虫
 			userid, pcbs, err := this.startNextPC()
 			if err != nil {
-				if err.Error() != "redis: nil" {
-					fmt.Println(err)
+				if !strings.Contains(err.Error(), "redis: nil") {
+					logger.Println(err)
 				}
 				continue
 			}
-			fmt.Println("PC ing ...")
+			logger.Println("PC ing ...")
 			proj.PCService.StartPC(pcbs.URL, pcbs.Keyword, pcbs.Site, pcbs.Token, userid, pcbs.TitleKeyWord)
 			if userid == "" {
-				fmt.Println("userid is nil")
+				logger.Println("userid is nil")
 				continue
 			}
 			_, err = this.SetUserSubMsgNoRead(userid, utils.UserSubUrl)
 			if err != nil {
-				fmt.Println(err)
+				logger.Println(err)
 				continue
 			}
-			fmt.Println("set one")
+			logger.Println("set one")
 			time.Sleep(5 * time.Second)
 			// 将爬虫存放进爬取队列
 			err = this.SetPCBody(userid, pcbs)
 			if err != nil {
-				fmt.Println(err)
+				logger.Println(err)
 				continue
 			}
 		}
