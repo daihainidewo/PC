@@ -3,6 +3,7 @@ package proj
 
 type IPCService interface {
 	StartPC(url, keyword, site, token, userid string, titleKeyword []string)
+	CtrlPC()
 }
 
 var PCService IPCService

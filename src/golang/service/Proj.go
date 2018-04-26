@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"golang/dao"
 	"golang/entity"
-	"golang/proj"
 	"golang/utils"
-	"strings"
 	"time"
-	"golang/logger"
+	"container/list"
+	"encoding/json"
 )
 
 type ProjServiceImp struct {
@@ -20,7 +19,7 @@ func NewProjService() *ProjServiceImp {
 }
 
 // 通过获取redis和mysql的数据启动爬虫程序
-func (this *ProjServiceImp) startNextPC() (string, *entity.PCBreakStruct, error) {
+func (this *ProjServiceImp) StartNextPC() (string, *entity.PCBreakStruct, error) {
 	// redis中获取排队数据
 	redikey := utils.GetWaitPCQueueKey()
 	pcbody, err := dao.RedisCacheDao.GetPCBodyMsg(redikey)
@@ -30,8 +29,6 @@ func (this *ProjServiceImp) startNextPC() (string, *entity.PCBreakStruct, error)
 	if pcbody == nil {
 		return "", nil, nil
 	}
-	logger.Println("get new")
-	logger.Println(pcbody)
 	// 从mysql获取上次中断信息
 	pcbs, err := dao.MysqlProjDao.SelectPCBody(utils.GetUserTimeMysqlKey(pcbody))
 	if err != nil {
@@ -46,16 +43,17 @@ func (this *ProjServiceImp) startNextPC() (string, *entity.PCBreakStruct, error)
 		return "", nil, fmt.Errorf("startNextPC:%s", err)
 	}
 	// 载入内存
-	for _, l := range pcbs.PageTitleList2Slice {
-		utils.PageTitleList.PushBack(l)
-	}
 	utils.PageTitleMap = pcbs.PageTitleMap
-
-	// 设置本次开始的url
-	if len(pcbs.PageTitleList2Slice) != 0 {
-		pcbs.URL = pcbs.PageTitleList2Slice[0]
-		utils.PageTitleList.Remove(utils.PageTitleList.Front())
+	utils.PageTitleList = list.New()
+	temp := new(entity.PageTitleStruct)
+	for _, l := range pcbs.PageTitleList2Slice {
+		json.Unmarshal([]byte(l), temp)
+		if temp == nil {
+			continue
+		}
+		utils.PageTitleList.PushBack(*temp)
 	}
+
 	return pcbody.Userid, pcbs, nil
 }
 
@@ -77,45 +75,6 @@ func (this *ProjServiceImp) SetPCBody(userid string, value *entity.PCBreakStruct
 		return fmt.Errorf("[Service]ProjServiceImp:SetPCBody:%s", err)
 	}
 	return nil
-}
-
-func (this *ProjServiceImp) CtrlPC() {
-	ch := make(chan int, 1)
-	go func() {
-		for {
-			time.Sleep(1 * time.Second)
-			logger.Println("the next pc")
-			utils.UserSubUrl = make([]entity.PageTitleStruct, 0)
-			// 准备下一个爬虫
-			userid, pcbs, err := this.startNextPC()
-			if err != nil {
-				if !strings.Contains(err.Error(), "redis: nil") {
-					logger.Println(err)
-				}
-				continue
-			}
-			logger.Println("PC ing ...")
-			proj.PCService.StartPC(pcbs.URL, pcbs.Keyword, pcbs.Site, pcbs.Token, userid, pcbs.TitleKeyWord)
-			if userid == "" {
-				logger.Println("userid is nil")
-				continue
-			}
-			_, err = this.SetUserSubMsgNoRead(userid, utils.UserSubUrl)
-			if err != nil {
-				logger.Println(err)
-				continue
-			}
-			logger.Println("set one")
-			time.Sleep(5 * time.Second)
-			// 将爬虫存放进爬取队列
-			err = this.SetPCBody(userid, pcbs)
-			if err != nil {
-				logger.Println(err)
-				continue
-			}
-		}
-	}()
-	<-ch
 }
 
 // 设置未读消息

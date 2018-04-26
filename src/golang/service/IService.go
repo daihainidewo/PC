@@ -5,7 +5,7 @@ import "golang/entity"
 
 type IProjService interface {
 	SetPCBody(userid string, value *entity.PCBreakStruct) error
-	CtrlPC()
+	StartNextPC() (string, *entity.PCBreakStruct, error)
 	SetUserSubMsgNoRead(userid string, val []entity.PageTitleStruct) (int64, error)
 	SetUserSubMsgReaded(userid string, val []entity.PageTitleStruct) (int64, error)
 	Close()

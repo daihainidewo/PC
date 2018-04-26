@@ -47,6 +47,9 @@ func ReadConf(path string) (*conf.ConfStruct, error) {
 	if ret.LogLevel == "" {
 		ret.LogLevel = "debug"
 	}
+	if ret.LogLevel != "debug" && ret.LogLevel != "info" {
+		return nil, fmt.Errorf("日志等级出错")
+	}
 	if ret.RedisAddr == "" {
 		ret.RedisAddr = "localhost:6379"
 	}

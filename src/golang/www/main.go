@@ -90,13 +90,13 @@ func main() {
 	utils.PageSM = new(sync.Mutex)
 
 	// 启动爬虫服务
-	go service.ProjService.CtrlPC()
+	go proj.PCService.CtrlPC()
 
 	signCh := make(chan os.Signal)
 	signal.Notify(signCh, os.Interrupt, os.Kill, syscall.SIGTERM)
 	go StartRouter(conf.Conf.StartPort)
 	logger.Println("server start, port:", conf.Conf.StartPort)
-	fmt.Println(string(confstring))
+	logger.Println(string(confstring))
 
 	<-signCh
 	logger.Println("server end")

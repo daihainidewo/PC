@@ -7,6 +7,8 @@ import (
 	"golang/entity"
 	"golang/utils"
 	"time"
+	"golang/logger"
+	"encoding/json"
 )
 
 type WWWServiceImp struct{}
@@ -51,18 +53,25 @@ func (this *WWWServiceImp) SetUserSubMsg(userid, suburl, keyword, site, token st
 			return fmt.Errorf("[Service]WWWServiceImp:SetUserSubMsg:%s", err)
 		}
 	}
-	fmt.Println(temp)
+
 	// 将信息存放至mysql中
 	tempsub := new(entity.PCQueueStruct)
 	tempsub.Userid = userid
 	tempsub.Timest = fmt.Sprintf("%d", time.Now().Unix())
 	tempstruct := new(entity.PCBreakStruct)
 	tempstruct.User2SubStruct = temp
+
+	//utils.PageTitleMap[starttoken.URL] = starttoken.Title
+	//utils.PageTitleList.PushBack(starttoken)
+	starttoken := entity.PageTitleStruct{"", temp.URL}
+	tempstruct.PageTitleList2Slice = make([]string, 1)
+	t, _ := json.Marshal(starttoken)
+	tempstruct.PageTitleList2Slice[0] = string(t)
 	tempstruct.PageTitleMap = make(map[string]string)
-	tempstruct.PageTitleList2Slice = make([]string, 0)
+	logger.Println(tempstruct)
 	// 添加信息至mysql和redis排队
 	err = ProjService.SetPCBody(userid, tempstruct)
-	fmt.Println("insert redis success")
+
 	return err
 }
 
@@ -127,7 +136,7 @@ func (this *WWWServiceImp) SetUserMsg(username, userpasswd string) (string, erro
 		return "", nil
 	}
 	userid := fmt.Sprintf("%d", time.Now().UnixNano())[:7]
-	fmt.Println(userid)
+	//fmt.Println(userid)
 	_, err = dao.MysqlWWWDao.InsertUserMsg(userid, username, userpasswd)
 	return userid, err
 }

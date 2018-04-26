@@ -2,7 +2,6 @@
 package proj
 
 import (
-	"fmt"
 	"golang/entity"
 	"golang/utils"
 	"io/ioutil"
@@ -12,6 +11,8 @@ import (
 	"sync"
 	"time"
 	"golang/logger"
+	"golang/service"
+	"encoding/json"
 )
 
 type PC struct {
@@ -75,10 +76,6 @@ func (this *PC) parseHtml(passtoken entity.PageSiteTokeStruct, msg entity.PageTi
 			utils.UserSubUrl = append(utils.UserSubUrl, tempret)
 		}
 	}
-
-	//utils.Countsm.Lock()
-	//utils.Count++
-	//utils.Countsm.Unlock()
 
 	re = regexp.MustCompile(`(?s:<a(.*?)href="(.*?)"(.*?)>(.*?)</a>)`)
 	res = re.FindAllStringSubmatch(html, -1)
@@ -176,13 +173,7 @@ func (this *PC) trimHtml(src string) string {
 
 // 启动爬虫
 func (this *PC) StartPC(url, keyword, site, token, userid string, titleKeyword []string) {
-	starttoken := entity.PageTitleStruct{"网站首页", url}
-	usersub := entity.UserSubStruct{Keyword: keyword}
 	passtoken := entity.PageSiteTokeStruct{Site: site, Token: token}
-	utils.SubUserMap[usersub] = append(make([]string, 0), userid)
-	utils.UserSubMap[userid] = append(make([]entity.UserSubStruct, 0), usersub)
-	utils.PageTitleMap[starttoken.URL] = starttoken.Title
-	utils.PageTitleList.PushBack(starttoken)
 	ch := make(chan struct{}, utils.PROJECTNUM)
 	countsm := new(sync.Mutex)
 	for i := 0; i < utils.PROJECTNUM; i++ {
@@ -205,10 +196,10 @@ func (this *PC) StartPC(url, keyword, site, token, userid string, titleKeyword [
 					countsm.Unlock()
 					continue
 				}
-				data := (ele.Value.(entity.PageTitleStruct))
+				//fmt.Println((ele.Value).(string))
+				data := ele.Value.(entity.PageTitleStruct)
 				utils.PageTitleList.Remove(ele)
 				countsm.Unlock()
-
 				html := this.downloadHtml(data.URL)
 				if html == "" {
 					continue
@@ -222,13 +213,11 @@ func (this *PC) StartPC(url, keyword, site, token, userid string, titleKeyword [
 						utils.PageSM.Unlock()
 						continue
 					}
-					//countsm.Lock()
 					utils.PageTitleList.PushBack(r)
-					//countsm.Unlock()
+					logger.DebugPrintln("set one", r.URL)
 					(utils.PageTitleMap)[r.URL] = r.Title
 					utils.PageSM.Unlock()
 				}
-
 				scancount++
 				if scancount > utils.PACOUNT {
 					//logger.Println("break one")
@@ -240,4 +229,50 @@ func (this *PC) StartPC(url, keyword, site, token, userid string, titleKeyword [
 	for i := 0; i < utils.PROJECTNUM; i++ {
 		<-ch
 	}
+}
+
+func (this *PC) CtrlPC() {
+	ch := make(chan int, 1)
+	go func() {
+		for {
+			time.Sleep(1 * time.Second)
+			logger.Println("the next pc")
+			utils.UserSubUrl = make([]entity.PageTitleStruct, 0)
+			// 准备下一个爬虫
+			userid, pcbs, err := service.ProjService.StartNextPC()
+			if err != nil {
+				if !strings.Contains(err.Error(), "redis: nil") {
+					logger.Println(err)
+				}
+				continue
+			}
+			logger.Println("PC ing ...", pcbs, utils.PageTitleList.Len())
+			this.StartPC(pcbs.URL, pcbs.Keyword, pcbs.Site, pcbs.Token, userid, pcbs.TitleKeyWord)
+			if userid == "" {
+				logger.Println("userid is nil")
+				continue
+			}
+			_, err = service.ProjService.SetUserSubMsgNoRead(userid, utils.UserSubUrl)
+			if err != nil {
+				logger.Println(err)
+				continue
+			}
+			logger.Println("set one")
+			// 将爬虫存放进爬取队列
+			pcbs.PageTitleMap = utils.PageTitleMap
+			pcbs.PageTitleList2Slice = make([]string, utils.PageTitleList.Len())
+			iter := utils.PageTitleList.Front()
+			for i := 0; i < utils.PageTitleList.Len(); i++ {
+				t, _ := json.Marshal(iter.Value.(entity.PageTitleStruct))
+				pcbs.PageTitleList2Slice[i] = string(t)
+				iter = iter.Next()
+			}
+			err = service.ProjService.SetPCBody(userid, pcbs)
+			if err != nil {
+				logger.Println(err)
+				continue
+			}
+		}
+	}()
+	<-ch
 }

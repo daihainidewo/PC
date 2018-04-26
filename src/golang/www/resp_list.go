@@ -8,12 +8,11 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"time"
 	"golang/logger"
 )
 
 func indexNoLogin(w http.ResponseWriter, r *http.Request) {
-	logger.Println("get index no login", time.Now())
+	logger.LogPrintln("get index no login")
 	ret := `<a href="/user/login">用户请登录</a>`
 	w.Write([]byte(ret))
 	return
@@ -21,7 +20,7 @@ func indexNoLogin(w http.ResponseWriter, r *http.Request) {
 
 func userLogin(w http.ResponseWriter, r *http.Request) {
 	defer errorReport("userLogin", w)
-	logger.Println("get /user/login", time.Now())
+	logger.LogPrintln("get /user/login")
 	r.ParseForm()
 	username := r.PostForm.Get("username")
 	password := r.PostForm.Get("passwd")
@@ -46,7 +45,7 @@ func userLogin(w http.ResponseWriter, r *http.Request) {
 
 func userZhuce(w http.ResponseWriter, r *http.Request) {
 	defer errorReport("userZhuce", w)
-	logger.Println("get /user/zhuce", time.Now())
+	logger.LogPrintln("get /user/zhuce")
 	r.ParseForm()
 	username := r.PostForm.Get("username")
 	passwd := r.PostForm.Get("password")
@@ -69,11 +68,11 @@ func userZhuce(w http.ResponseWriter, r *http.Request) {
 
 func index(w http.ResponseWriter, r *http.Request) {
 	defer errorReport("index", w)
-	logger.Println("get /index", time.Now())
+	logger.LogPrintln("get /index")
 	//
 	//cookie, err1 := utils.Htmlcookie.ReadCookie(r, "userid")
 	//if err1 != nil {
-	//	logger.Println(err1)
+	//	logger.LogPrintln()(err1)
 	//}
 	//if cookie == "" { // 没有cookie，用户需要登录
 	//	indexNoLogin(w, r)
@@ -82,7 +81,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
 	//user := r.PostForm.Get("user")
-	//logger.Println(user)
+	//logger.LogPrintln()(user)
 	fp, err := os.Open("html\\index.html")
 	if err != nil {
 		logger.Println(err)
@@ -96,7 +95,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 
 func userSub(w http.ResponseWriter, r *http.Request) {
 	defer errorReport("userSub", w)
-	logger.Println("get /userSub", time.Now())
+	logger.LogPrintln("get /userSub")
 	r.ParseForm()
 	userid := r.Form.Get("userid")
 	suburl := r.Form.Get("suburl")
@@ -132,7 +131,7 @@ func userSub(w http.ResponseWriter, r *http.Request) {
 
 func userGetSub(w http.ResponseWriter, r *http.Request) {
 	defer errorReport("userGetSub", w)
-	logger.Println("get /userGetSub", time.Now())
+	logger.LogPrintln("get /userGetSub")
 	r.ParseForm()
 	userid := r.Form.Get("userid")
 	if userid == "" {
@@ -153,7 +152,7 @@ func userGetSub(w http.ResponseWriter, r *http.Request) {
 
 func userReaded(w http.ResponseWriter, r *http.Request) {
 	defer errorReport("userReaded", w)
-	logger.Println("get /userReaded", time.Now())
+	logger.LogPrintln("get /user/readed")
 	r.ParseForm()
 	userid := r.Form.Get("userid")
 	if userid == "" {
@@ -174,7 +173,7 @@ func userReaded(w http.ResponseWriter, r *http.Request) {
 
 func userNoread(w http.ResponseWriter, r *http.Request) {
 	defer errorReport("userNoread", w)
-	logger.Println("get /userNoread", time.Now())
+	logger.LogPrintln("/user/noread")
 	r.ParseForm()
 	userid := r.Form.Get("userid")
 	if userid == "" {
@@ -195,7 +194,7 @@ func userNoread(w http.ResponseWriter, r *http.Request) {
 
 func userReadMsg(w http.ResponseWriter, r *http.Request) {
 	defer errorReport("userReadMsg", w)
-	logger.Println("/user/readmsg", time.Now())
+	logger.LogPrintln("/user/readmsg")
 	r.ParseForm()
 	userid := r.Form.Get("userid")
 	if userid == "" {
