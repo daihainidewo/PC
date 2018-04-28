@@ -18,12 +18,12 @@ func TestRedisCacheImp_GetPCBody(t *testing.T) {
 	val := new(entity.PCQueueStruct)
 	val.Timest = fmt.Sprintf("%d", time.Now().UnixNano())
 	val.Userid = "123421"
-	err := RedisCacheDao.SetPCBody("key", val)
+	err := RedisCacheDao.SetPCBodyMsg("key", val)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	val, err1 := RedisCacheDao.GetPCBody("key")
+	val, err1 := RedisCacheDao.GetPCBodyMsg("key")
 	if err1 != nil {
 		fmt.Println(err1)
 	}

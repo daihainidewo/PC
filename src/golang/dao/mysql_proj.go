@@ -163,7 +163,7 @@ func (this *MysqlProjClientImp) UpdateUserSubMsgNoRead(userid string, value *ent
 }
 
 func (this *MysqlProjClientImp) DeletePCBody(userid_timest string) (int64, error) {
-	sql := `DELETE FROM user_sub WHERE user_sub_user_id=?`
+	sql := `DELETE FROM pc_body_msg WHERE pc_body_msg_user_id=?`
 	res, err := this.doSQL(sql, userid_timest)
 	if err != nil {
 		return -1, fmt.Errorf("[Dao]MysqlProjClientImp:DeletePCBody:%s", err)

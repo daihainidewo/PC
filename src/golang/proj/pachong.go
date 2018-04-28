@@ -22,6 +22,50 @@ func NewPCInit() *PC {
 	return new(PC)
 }
 
+// 处理网页无关信息
+func (this *PC) trimHtml(src string) string {
+	//将HTML标签全转换成小写
+	var re *regexp.Regexp
+
+	//去除注释
+	re, _ = regexp.Compile("<!--[\\S\\s]+?-->")
+	src = re.ReplaceAllString(src, "")
+
+	//将网页小写
+	src = strings.ToLower(src)
+
+	//去除STYLE
+	re, _ = regexp.Compile("\\<style[\\S\\s]+?\\</style\\>")
+	src = re.ReplaceAllString(src, "")
+
+	//去除SCRIPT
+	re, _ = regexp.Compile("\\<script[\\S\\s]+?\\</script\\>")
+	src = re.ReplaceAllString(src, "")
+
+	// 将转移字符转义回来
+	re, _ = regexp.Compile("&lt;")
+	src = re.ReplaceAllString(src, "<")
+	re, _ = regexp.Compile("&gt;")
+	src = re.ReplaceAllString(src, ">")
+	re, _ = regexp.Compile("&quot;")
+	src = re.ReplaceAllString(src, `"`)
+
+	re, _ = regexp.Compile("<([\\s]*?)/a([\\s]*?)>")
+	src = re.ReplaceAllString(src, "<a>")
+	//去除所有尖括号内的HTML代码，并换成换行符
+	re, _ = regexp.Compile("<([\\s]*?)[^a][\\S\\s]*?>")
+	src = re.ReplaceAllString(src, "\n")
+
+	re, _ = regexp.Compile("<a>")
+	src = re.ReplaceAllString(src, "</a>")
+	//去除连续的换行符
+	re, _ = regexp.Compile("\\s{2,}")
+	src = re.ReplaceAllString(src, "\n")
+	//logger.Println(time.Now())
+
+	return strings.TrimSpace(src)
+}
+
 // 网页下载器
 func (this *PC) downloadHtml(url string) string {
 	resp, err := http.Get(url)
@@ -127,52 +171,8 @@ func (this *PC) parseHtml(passtoken entity.PageSiteTokeStruct, msg entity.PageTi
 	return ret
 }
 
-// 处理网页无关信息
-func (this *PC) trimHtml(src string) string {
-	//将HTML标签全转换成小写
-	var re *regexp.Regexp
-
-	//去除注释
-	re, _ = regexp.Compile("<!--[\\S\\s]+?-->")
-	src = re.ReplaceAllString(src, "")
-
-	//将网页小写
-	src = strings.ToLower(src)
-
-	//去除STYLE
-	re, _ = regexp.Compile("\\<style[\\S\\s]+?\\</style\\>")
-	src = re.ReplaceAllString(src, "")
-
-	//去除SCRIPT
-	re, _ = regexp.Compile("\\<script[\\S\\s]+?\\</script\\>")
-	src = re.ReplaceAllString(src, "")
-
-	// 将转移字符转义回来
-	re, _ = regexp.Compile("&lt;")
-	src = re.ReplaceAllString(src, "<")
-	re, _ = regexp.Compile("&gt;")
-	src = re.ReplaceAllString(src, ">")
-	re, _ = regexp.Compile("&quot;")
-	src = re.ReplaceAllString(src, `"`)
-
-	re, _ = regexp.Compile("<([\\s]*?)/a([\\s]*?)>")
-	src = re.ReplaceAllString(src, "<a>")
-	//去除所有尖括号内的HTML代码，并换成换行符
-	re, _ = regexp.Compile("<([\\s]*?)[^a][\\S\\s]*?>")
-	src = re.ReplaceAllString(src, "\n")
-
-	re, _ = regexp.Compile("<a>")
-	src = re.ReplaceAllString(src, "</a>")
-	//去除连续的换行符
-	re, _ = regexp.Compile("\\s{2,}")
-	src = re.ReplaceAllString(src, "\n")
-	//logger.Println(time.Now())
-
-	return strings.TrimSpace(src)
-}
-
 // 启动爬虫
-func (this *PC) StartPC(url, keyword, site, token, userid string, titleKeyword []string) {
+func (this *PC) startPC(url, keyword, site, token, userid string, titleKeyword []string) {
 	passtoken := entity.PageSiteTokeStruct{Site: site, Token: token}
 	ch := make(chan struct{}, utils.PROJECTNUM)
 	countsm := new(sync.Mutex)
@@ -214,10 +214,11 @@ func (this *PC) StartPC(url, keyword, site, token, userid string, titleKeyword [
 						continue
 					}
 					utils.PageTitleList.PushBack(r)
-					logger.DebugPrintln("set one", r.URL)
+					//logger.DebugPrintln("set one", r.URL)
 					(utils.PageTitleMap)[r.URL] = r.Title
 					utils.PageSM.Unlock()
 				}
+				logger.Println(utils.PageTitleList.Len())
 				scancount++
 				if scancount > utils.PACOUNT {
 					//logger.Println("break one")
@@ -246,8 +247,8 @@ func (this *PC) CtrlPC() {
 				}
 				continue
 			}
-			logger.Println("PC ing ...", pcbs, utils.PageTitleList.Len())
-			this.StartPC(pcbs.URL, pcbs.Keyword, pcbs.Site, pcbs.Token, userid, pcbs.TitleKeyWord)
+			logger.Println("PC ing ...")
+			this.startPC(pcbs.URL, pcbs.Keyword, pcbs.Site, pcbs.Token, userid, pcbs.TitleKeyWord)
 			if userid == "" {
 				logger.Println("userid is nil")
 				continue
@@ -257,7 +258,7 @@ func (this *PC) CtrlPC() {
 				logger.Println(err)
 				continue
 			}
-			logger.Println("set one")
+			logger.Println(utils.PageTitleList.Len())
 			// 将爬虫存放进爬取队列
 			pcbs.PageTitleMap = utils.PageTitleMap
 			pcbs.PageTitleList2Slice = make([]string, utils.PageTitleList.Len())
@@ -267,12 +268,20 @@ func (this *PC) CtrlPC() {
 				pcbs.PageTitleList2Slice[i] = string(t)
 				iter = iter.Next()
 			}
+			logger.Println()
 			err = service.ProjService.SetPCBody(userid, pcbs)
 			if err != nil {
 				logger.Println(err)
 				continue
 			}
+			logger.Println("map len", len(pcbs.PageTitleMap))
+			logger.Println("sleep...")
+			//time.Sleep(1 * time.Minute)
 		}
 	}()
 	<-ch
+}
+
+func (this *PC) Close() {
+
 }

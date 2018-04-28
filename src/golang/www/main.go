@@ -65,10 +65,14 @@ func main() {
 	dao.MysqlProjDao = dao.NewProjMysqlClient(conf.Conf.MysqlProjDriverName, conf.Conf.MysqlProjDataSourceName)
 	dao.MysqlWWWDao = dao.NewWWWMysqlClient(conf.Conf.MysqlWWWDriverName, conf.Conf.MysqlWWWDataSourceName)
 
+	// 启动爬虫服务
+	go proj.PCService.CtrlPC()
+
 	defer func() {
 		dao.RedisCacheDao.Close()
 		dao.MysqlProjDao.Close()
 		dao.MysqlWWWDao.Close()
+		proj.PCService.Close()
 	}()
 
 	// 启动cookie
@@ -88,9 +92,6 @@ func main() {
 	utils.PageTitleList = list.New()
 
 	utils.PageSM = new(sync.Mutex)
-
-	// 启动爬虫服务
-	go proj.PCService.CtrlPC()
 
 	signCh := make(chan os.Signal)
 	signal.Notify(signCh, os.Interrupt, os.Kill, syscall.SIGTERM)
