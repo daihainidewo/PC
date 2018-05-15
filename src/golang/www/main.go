@@ -83,9 +83,9 @@ func main() {
 	signCh := make(chan os.Signal)
 	signal.Notify(signCh, os.Interrupt, os.Kill, syscall.SIGTERM)
 	go StartRouter(conf.Conf.StartPort)
-	logger.Println("server start, port:", conf.Conf.StartPort)
-	logger.Println(string(confstring))
+	logger.LogPrintln("server start, port:", conf.Conf.StartPort)
+	logger.LogPrintln(string(confstring))
 
 	<-signCh
-	logger.Println("server end")
+	logger.LogPrintln("server end")
 }

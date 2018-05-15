@@ -237,28 +237,28 @@ func (this *PC) CtrlPC() {
 	go func() {
 		for {
 			time.Sleep(1 * time.Second)
-			logger.Println("the next pc")
+			logger.LogPrintln("the next pc")
 			utils.UserSubUrl = make([]entity.PageTitleStruct, 0)
 			// 准备下一个爬虫
 			userid, pcbs, err := service.ProjService.StartNextPC()
 			if err != nil {
 				if !strings.Contains(err.Error(), "redis: nil") {
-					logger.Println(err)
+					logger.ErrPrintln(err)
 				}
 				continue
 			}
-			logger.Println("PC ing ...")
+			logger.LogPrintln("PC ing ...")
 			this.startPC(pcbs.URL, pcbs.Keyword, pcbs.Site, pcbs.Token, userid, pcbs.TitleKeyWord)
 			if userid == "" {
-				logger.Println("userid is nil")
+				logger.LogPrintln("userid is nil")
 				continue
 			}
 			_, err = service.ProjService.SetUserSubMsgNoRead(userid, utils.UserSubUrl)
 			if err != nil {
-				logger.Println(err)
+				logger.ErrPrintln(err)
 				continue
 			}
-			logger.Println(utils.PageTitleList.Len())
+			//logger.LogPrintln(utils.PageTitleList.Len())
 			// 将爬虫存放进爬取队列
 			pcbs.PageTitleMap = utils.PageTitleMap
 			pcbs.PageTitleList2Slice = make([]string, utils.PageTitleList.Len())
@@ -268,14 +268,14 @@ func (this *PC) CtrlPC() {
 				pcbs.PageTitleList2Slice[i] = string(t)
 				iter = iter.Next()
 			}
-			logger.Println()
+			//logger.Println()
 			err = service.ProjService.SetPCBody(userid, pcbs)
 			if err != nil {
-				logger.Println(err)
+				logger.ErrPrintln(err)
 				continue
 			}
-			logger.Println("map len", len(pcbs.PageTitleMap))
-			logger.Println("sleep...")
+			//logger.Println("map len", len(pcbs.PageTitleMap))
+			//logger.Println("sleep...")
 			//time.Sleep(1 * time.Minute)
 		}
 	}()

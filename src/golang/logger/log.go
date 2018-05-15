@@ -27,6 +27,7 @@ func StartLog(path string){
 	}
 }
 
+// 打印普通消息函数
 func Printf(format string, a ...interface{}) {
 	fmt.Fprintf(utils.LogFile, "[%s]:", conf.Conf.LogLevel)
 	fmt.Fprintf(utils.LogFile, format, a...)
@@ -35,11 +36,14 @@ func Println(a ...interface{}) {
 	fmt.Fprintf(utils.LogFile, "[%s]:", conf.Conf.LogLevel)
 	fmt.Fprintln(utils.LogFile, a...)
 }
+
+// 打印日志消息
 func LogPrintln(a ...interface{}) {
 	t := time.Now()
 	fmt.Fprintf(utils.LogFile, "[%s]:[log]:[%s]", conf.Conf.LogLevel, t.Format("15:04:05"))
 	fmt.Fprintln(utils.LogFile, a...)
 }
+// 打印错误消息
 func ErrPrintln(a ...interface{}) {
 	t := time.Now()
 	fmt.Fprintf(utils.LogFile, "[%s]:[error]:[%s]", conf.Conf.LogLevel, t.Format("15:04:05"))

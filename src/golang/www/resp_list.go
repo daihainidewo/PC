@@ -27,7 +27,7 @@ func userLogin(w http.ResponseWriter, r *http.Request) {
 	// 验证用户正确性
 	userid, err := service.WWWService.CheckUser(username, password)
 	if err != nil {
-		logger.Println(err)
+		logger.ErrPrintln(err)
 		res := utils.RespJson(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "系统错误")
 		w.Write(res)
 		return
@@ -53,6 +53,7 @@ func userZhuce(w http.ResponseWriter, r *http.Request) {
 	logger.Println(username, passwd)
 	userid, err := service.WWWService.SetUserMsg(username, passwd)
 	if err != nil {
+		logger.ErrPrintln(err)
 		res := utils.RespJson(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "系统错误")
 		w.Write(res)
 		return
@@ -84,11 +85,11 @@ func index(w http.ResponseWriter, r *http.Request) {
 	//logger.LogPrintln()(user)
 	fp, err := os.Open("html\\index.html")
 	if err != nil {
-		logger.Println(err)
+		logger.ErrPrintln(err)
 	}
 	html, err1 := ioutil.ReadAll(fp)
 	if err1 != nil {
-		logger.Println(err1)
+		logger.ErrPrintln(err1)
 	}
 	w.Write(html)
 }
@@ -120,7 +121,7 @@ func userSub(w http.ResponseWriter, r *http.Request) {
 	}
 	err := service.WWWService.SetUserSubMsg(userid, suburl, keyword, site, token, titlekeyword)
 	if err != nil {
-		logger.Println(err)
+		logger.ErrPrintln(err)
 		res := utils.RespJson(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "系统错误")
 		w.Write(res)
 		return
@@ -141,6 +142,7 @@ func userGetSub(w http.ResponseWriter, r *http.Request) {
 	}
 	ret, err := service.WWWService.GetUserSubMsg(userid)
 	if err != nil {
+		logger.ErrPrintln(err)
 		res := utils.RespJson(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "系统错误")
 		w.Write(res)
 		return
@@ -162,6 +164,7 @@ func userReaded(w http.ResponseWriter, r *http.Request) {
 	}
 	ret, err := service.WWWService.GetUserReaded(userid)
 	if err != nil {
+		logger.ErrPrintln(err)
 		res := utils.RespJson(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "系统错误")
 		w.Write(res)
 		return
@@ -183,6 +186,7 @@ func userNoread(w http.ResponseWriter, r *http.Request) {
 	}
 	ret, err := service.WWWService.GetUserNoread(userid)
 	if err != nil {
+		logger.ErrPrintln(err)
 		res := utils.RespJson(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "系统错误")
 		w.Write(res)
 		return
@@ -204,6 +208,7 @@ func userReadMsg(w http.ResponseWriter, r *http.Request) {
 	}
 	ret, err := service.WWWService.GetUserReadMsg(userid)
 	if err != nil {
+		logger.ErrPrintln(err)
 		res := utils.RespJson(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "系统错误")
 		w.Write(res)
 		return
