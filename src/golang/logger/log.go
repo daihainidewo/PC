@@ -6,7 +6,26 @@ import (
 	"golang/utils"
 	"golang/conf"
 	"time"
+	"os"
 )
+
+func StartLog(path string){
+	if path != "" {
+		tick := time.NewTicker(1 * time.Hour)
+		go func() {
+			for range tick.C {
+				logpath := utils.GetCurLogPath(path)
+				logf, err := os.OpenFile(logpath, os.O_WRONLY|os.O_CREATE|os.O_SYNC, 0755)
+				if err != nil {
+					fmt.Println("读取日志文件错误，error：", err)
+				}
+				utils.LogFile = logf
+			}
+		}()
+	} else {
+		utils.LogFile = os.Stdout
+	}
+}
 
 func Printf(format string, a ...interface{}) {
 	fmt.Fprintf(utils.LogFile, "[%s]:", conf.Conf.LogLevel)

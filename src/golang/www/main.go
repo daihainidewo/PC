@@ -40,21 +40,8 @@ func main() {
 		return
 	}
 	// 设置进程日志
-	if conf.Conf.LogPath != "" {
-		tick := time.NewTicker(1 * time.Hour)
-		go func() {
-			for range tick.C {
-				logpath := utils.GetCurLogPath(conf.Conf.LogPath)
-				logf, err := os.OpenFile(logpath, os.O_WRONLY|os.O_CREATE|os.O_SYNC, 0755)
-				if err != nil {
-					fmt.Println("读取日志文件错误，error：", err)
-				}
-				utils.LogFile = logf
-			}
-		}()
-	} else {
-		utils.LogFile = os.Stdout
-	}
+	logger.StartLog(conf.Conf.LogPath)
+
 	// 启动服务
 	service.WWWService = service.NewWWWService()
 	service.ProjService = service.NewProjService()
