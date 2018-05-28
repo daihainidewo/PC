@@ -2,15 +2,85 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>login</title>
+    <title>欢迎登录</title>
+    <script src="js/jquery.js"></script>
+    <link href="css/bootstrap.min.css" rel="stylesheet"/>
+    <script src="js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#reset").click(function () {
+                $("#username").val("");
+                $("#passwd").val("");
+            });
+            $("#submit").click(function () {
+                if($("#username").val() == "" || $("#passwd").val() == ""){
+                    alert("请输入用户名和密码！");
+                    return ;
+                }
+                $.ajax({
+                    type:"POST",
+
+                });
+            });
+        });
+    </script>
 </head>
 <body>
-登录<br/>
-<form action="/user/login" method="post">
-    <label>用户名</label><input type="text" name="username" placeholder="请输入用户户名"/>
-    <br/>
-    <label>密码</label><input type="password" name="password" placeholder="请输密码"/>
-</form>
+<div class="container">
+    <div class="row" style="background-color:#b9bbbe;">
+        <div class="col-md-12">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="text-center"><h1>欢迎来到专向订阅爬虫</h1></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row" style="background-color:paleturquoise;">
+        <div class="col-md-12">
+            <div class="text-center"><h3>登录页面</h3></div>
+        </div>
+        <div class="col-md-3"></div>
+        <form class="col-md-9" role="form">
 
+            <div class="row">
+                <div class="col-md-2">用户名：</div>
+                <div class="col-md-4">
+                    <input id="username" type="text" class="form-control" name="username"/>
+                </div>
+                <div class="col-md-2"></div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" style="height: 5px;"></div>
+            </div>
+            <div class="row">
+                <div class="col-md-2">输入密码：</div>
+                <div class="col-md-4">
+                    <input id="passwd" type="password" class="form-control" name="password"/>
+                </div>
+                <div class="col-md-2"></div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" style="height: 20px;"></div>
+            </div>
+            <div class="row">
+                <div class="col-md-3"></div>
+                <div class="col-md-1"><input id="submit" class="btn btn-primary" type="button" value="登录"></div>
+                <div class="col-md-1"><input id="reset" class="btn btn-primary" type="button" value="重置"></div>
+            </div>
+        </form>
+    </div>
+    <div class="row" style="background-color:azure;">
+        <div class="col-md-12">
+            <div class="row">
+                <div class="col-md-12">
+                    <div style="text-align: center">
+                        <h1>dh爱你的我&copy;版权所有</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

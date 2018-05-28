@@ -102,8 +102,21 @@ func userSub(w http.ResponseWriter, r *http.Request) {
 	suburl := r.Form.Get("suburl")
 	keyword := r.Form.Get("keyword")
 	token := r.Form.Get("token")
-	site := r.Form.Get("site")
 	titlekw := r.Form.Get("titlekeyword")
+
+	// 获取主站域名
+	bj := 0
+	i := 3
+	for {
+		if i<=0{
+			break
+		}
+		if i >= 0 && suburl[bj] == '/' {
+			i--
+		}
+		bj++
+	}
+	site := suburl[0:bj]
 	if userid == "" || suburl == "" {
 		res := utils.RespJson(utils.INVALID_PARAMS, utils.RespMsg[utils.INVALID_PARAMS], "参数错误")
 		w.Write(res)

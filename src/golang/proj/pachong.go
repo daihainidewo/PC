@@ -24,7 +24,6 @@ func NewPCInit() *PC {
 
 // 处理网页无关信息
 func (this *PC) trimHtml(src string) string {
-	//将HTML标签全转换成小写
 	var re *regexp.Regexp
 
 	//去除注释
@@ -52,13 +51,14 @@ func (this *PC) trimHtml(src string) string {
 
 	re, _ = regexp.Compile("<([\\s]*?)/a([\\s]*?)>")
 	src = re.ReplaceAllString(src, "<a>")
-	//去除所有尖括号内的HTML代码，并换成换行符
+	// 去除所有尖括号内的HTML代码，并换成换行符
 	re, _ = regexp.Compile("<([\\s]*?)[^a][\\S\\s]*?>")
 	src = re.ReplaceAllString(src, "\n")
 
 	re, _ = regexp.Compile("<a>")
 	src = re.ReplaceAllString(src, "</a>")
-	//去除连续的换行符
+	// 去除连续的换行符
+	// 这里可以将所有的换行符删除
 	re, _ = regexp.Compile("\\s{2,}")
 	src = re.ReplaceAllString(src, "\n")
 	//logger.Println(time.Now())
@@ -172,7 +172,7 @@ func (this *PC) parseHtml(passtoken entity.PageSiteTokeStruct, msg entity.PageTi
 }
 
 // 启动爬虫
-func (this *PC) startPC(url, keyword, site, token, userid string, titleKeyword []string) {
+func (this *PC) startPC(url, keyword, site, token string, titleKeyword []string) {
 	passtoken := entity.PageSiteTokeStruct{Site: site, Token: token}
 	ch := make(chan struct{}, utils.PROJECTNUM)
 	countsm := new(sync.Mutex)
@@ -242,23 +242,23 @@ func (this *PC) CtrlPC() {
 			// 准备下一个爬虫
 			userid, pcbs, err := service.ProjService.StartNextPC()
 			if err != nil {
+				// redis待爬队列为空
 				if !strings.Contains(err.Error(), "redis: nil") {
 					logger.ErrPrintln(err)
 				}
 				continue
 			}
-			logger.LogPrintln("PC ing ...")
-			this.startPC(pcbs.URL, pcbs.Keyword, pcbs.Site, pcbs.Token, userid, pcbs.TitleKeyWord)
 			if userid == "" {
-				logger.LogPrintln("userid is nil")
+				logger.LogPrintln("userid is null")
 				continue
 			}
+			logger.LogPrintln("PC ing ...")
+			this.startPC(pcbs.URL, pcbs.Keyword, pcbs.Site, pcbs.Token, pcbs.TitleKeyWord)
 			_, err = service.ProjService.SetUserSubMsgNoRead(userid, utils.UserSubUrl)
 			if err != nil {
 				logger.ErrPrintln(err)
 				continue
 			}
-			//logger.LogPrintln(utils.PageTitleList.Len())
 			// 将爬虫存放进爬取队列
 			pcbs.PageTitleMap = utils.PageTitleMap
 			pcbs.PageTitleList2Slice = make([]string, utils.PageTitleList.Len())

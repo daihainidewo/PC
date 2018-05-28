@@ -2,14 +2,134 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>zhuce</title>
+    <title>欢迎注册</title>
+    <script src="js/jquery.js"></script>
+    <link href="css/bootstrap.min.css" rel="stylesheet"/>
+    <script src="js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // 重置表单
+            $("#reset").click(function () {
+                $("#username").val("");
+                $("#passwd").val("");
+                $("#rpasswd").val("");
+            });
+            // 检查用户名是否重复
+            $("#username").blur(function () {
+                $.ajax({
+                    type: "GET",
+                    url: "",
+                    success: function () {
+
+                    },
+                    error: function () {
+
+                    },
+                });
+            });
+            // 提交表单
+            $("#submit").click(function () {
+                if($("#username").val() == ""){
+                    alert("请输入用户名");
+                    return
+                }
+                if ($("#passwd").val() != $("#rpasswd")) {
+                    alert("两次密码输入不一致");
+                    return
+                }
+                $.ajax({
+                    type: "GET",
+                    url: "",
+                    success: function () {
+
+                    },
+                    error: function () {
+
+                    },
+                });
+                $.ajax({
+                    type: "POST",
+                    url: "",
+                    data: "",
+                    dataType: json,
+                    success: function () {
+
+                    },
+                    error: function () {
+
+                    },
+                });
+            });
+            // 检查两次密码是否相同
+            $("#rpasswd").blur(function () {
+                if ($("#passwd").val() != $("#rpasswd").val()) {
+                    alert("两次密码输入不一致");
+                }
+            });
+        })
+        ;
+    </script>
 </head>
 <body>
-<form method="post" action="/user/zhuce">
-    <label>用户名</label><input type="text" placeholder="用户名" name="username"><br/>
-    <label>密码</label><input type="password" placeholder="密码" name="password"><br/>
-    <label>再次输入密码</label><input type="password" placeholder="确认密码" name=""><br/>
-    <input type="submit" value="提交"/>
-</form>
+<div class="container">
+    <div class="row" style="background-color:#b9bbbe;">
+        <div class="col-md-12">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="text-center"><h1>欢迎来到专向订阅爬虫</h1></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row" style="background-color:paleturquoise;">
+        <div class="col-md-12">
+            <div class="text-center"><h3>注册页面</h3></div>
+        </div>
+        <div class="col-md-3"></div>
+        <form class="col-md-9" role="form">
+
+            <div class="row">
+                <div class="col-md-2">用户名：</div>
+                <div class="col-md-4">
+                    <input id="username" type="text" class="form-control" name="username"/>
+                </div>
+                <div class="col-md-2"></div>
+            </div>
+            <div class="row">
+                <div class="col-md-2">输入密码：</div>
+                <div class="col-md-4">
+                    <input id="passwd" type="password" class="form-control" name="password"/>
+                </div>
+                <div class="col-md-2"></div>
+            </div>
+            <div class="row">
+                <div class="col-md-2">再次输入密码：</div>
+                <div class="col-md-4">
+                    <input id="rpasswd" type="password" class="form-control"/>
+                </div>
+                <div class="col-md-2"></div>
+            </div>
+            <div class="row">
+                <div style="height:20px;"></div>
+            </div>
+            <div class="row">
+                <div class="col-md-3"></div>
+                <div class="col-md-1"><input id="submit" class="btn btn-primary" type="button" value="提交"></div>
+                <div class="col-md-1"><input id="reset" class="btn btn-primary" type="button" value="重置"></div>
+            </div>
+        </form>
+    </div>
+    <div class="row" style="background-color:azure;">
+        <div class="col-md-12">
+            <div class="row">
+                <div class="col-md-12">
+                    <div style="text-align: center">
+                        <h1>dh爱你的我&copy;版权所有</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

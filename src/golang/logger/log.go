@@ -9,22 +9,31 @@ import (
 	"os"
 )
 
-func StartLog(path string){
+func StartLog(path string) {
 	if path != "" {
-		tick := time.NewTicker(1 * time.Hour)
 		go func() {
-			for range tick.C {
-				logpath := utils.GetCurLogPath(path)
-				logf, err := os.OpenFile(logpath, os.O_WRONLY|os.O_CREATE|os.O_SYNC, 0755)
-				if err != nil {
-					fmt.Println("读取日志文件错误，error：", err)
+			createLogfile(path)
+			time.Sleep(time.Duration((59-time.Now().Minute())*60+(60-time.Now().Second())) * time.Second)
+			tick := time.NewTicker(1 * time.Hour)
+			createLogfile(path)
+			go func() {
+				for range tick.C {
+					createLogfile(path)
 				}
-				utils.LogFile = logf
-			}
+			}()
 		}()
 	} else {
 		utils.LogFile = os.Stdout
 	}
+}
+
+func createLogfile(path string) {
+	logpath := utils.GetCurLogPath(path)
+	logf, err := os.OpenFile(logpath, os.O_WRONLY|os.O_CREATE|os.O_SYNC, 0644)
+	if err != nil {
+		fmt.Println("读取日志文件错误，error：", err)
+	}
+	utils.LogFile = logf
 }
 
 // 打印普通消息函数
@@ -43,6 +52,7 @@ func LogPrintln(a ...interface{}) {
 	fmt.Fprintf(utils.LogFile, "[%s]:[log]:[%s]", conf.Conf.LogLevel, t.Format("15:04:05"))
 	fmt.Fprintln(utils.LogFile, a...)
 }
+
 // 打印错误消息
 func ErrPrintln(a ...interface{}) {
 	t := time.Now()

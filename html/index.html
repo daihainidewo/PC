@@ -3,41 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <title>index</title>
-    <script src="//cdn.bootcss.com/jquery/2.2.3/jquery.min.js"></script>
-    <script src="jquery.js"></script>
+    <script src="js/jquery.js"></script>
+    <link href="css/bootstrap.min.css" rel="stylesheet"/>
+    <script src="js/bootstrap.min.js"></script>
+    <style>
+        .show-border {
+            border: solid 1px blueviolet;
+        }
+
+        .input-text {
+            margin-bottom: 2px;
+        }
+
+        .div-button {
+            margin: 5px 0px;
+        }
+    </style>
 </head>
 <body>
-<h1>
-    <center>hello world</center>
-</h1>
 <script>
     $(document).ready(function () {
-        $("#btn").click(function () {
-            alert($("#f1").serialize());
+        $("#reset").click(function () {
+            $("#url").val("");
+            $("#titlekey").val("");
+            $("#token").val("");
+            $("#keyword").val("");
+            var n = 1;
+            alert(++n + n++);
+            alert(n);
+        });
+        $("#submit").click(function () {
+            alert(encodeURIComponent($("#url").val()));
+            if ($("#url").val() == "" || $("#token").val() == "") {
+                alert("请输入必要的输入信息！");
+                return;
+            }
+            $.ajax({
+                type: "GET",
+                url: "json/test.json?url=" + encodeURIComponent($("#url").val()) + "&keyword=" + $("#keyword").val() + "&titlekey=" + $("#titlekey").val() + "&toen=" + encodeURIComponent($("#token").val()),
+                dataType: "json",
+                success: function (data) {
+                    $.each(data["data"], function (i, d) {
+                        alert(d);
+                    })
+                }
+            });
+        });
+        $("#check_sub").click(function () {
+            var userid = $("#bj").html();
+            var url = "json/usersub.txt?userid=" + userid;
+            $.ajax({
+                type: "GET",
+                url: url,
+                dataType: "html",
+                success: function (data) {
+                    $("#contain").html(data);
+                },
+                error: function (errmsg) {
+                    alert(errmsg);
+                }
+            })
+        });
+        $("#get_readed").click(function () {
+            var userid = $("#bj").html();
+            var url = "json/readed.txt?userid=" + userid;
+            $.ajax({
+                type: "GET",
+                url: url,
+                dataType: "html",
+                success: function (data) {
+                    $("#contain").html(data);
+                },
+                error: function (errmsg) {
+                    alert(errmsg);
+                }
+            })
+        });
+        $("#get_noread").click(function () {
+            var userid = $("#bj").html();
+            var url = "json/noread.txt?userid=" + userid;
+            $.ajax({
+                type: "GET",
+                url: url,
+                dataType: "html",
+                success: function (data) {
+                    $("#contain").html(data);
+                },
+                error: function (errmsg) {
+                    alert(errmsg);
+                }
+            })
         });
     })
 </script>
-<h1>welcome!!</h1>
-<form>
-    <label>添加搜索词条</label><br/>
-    <input type="text" name="starturl" placeholder="初始URL"/><br/>
-    <input type="text" name="keyword" placeholder="关键字"/><br/>
-    <input type="text" name="titlekeyword" placeholder="标题关键字"/><br/>
-    <input type="text" name="" placeholder="主站URL"/><br/>
-    <input type="text" name="" placeholder="网页token"/><br/>
-    <input type="submit" value="提交" id="submit"/>
-</form>
-<form>
-    <label>获取搜索未读词条</label><br/>
-    <input type="submit" name="" value="提交"/><br/>
-</form>
-<form id="f1">
-    <label>获取搜索全部词条</label><input type="text" name="msg"/><br/>
-    <input type="submit" name="" value="提交"/><br/>
-</form>
-<div>
-    <input type="text" id="inp"/>
-    <button id="btn">提交</button>
+<div id="bj" hidden>1234</div>
+<div class="container">
+    <div class="row" style="background-color:#afbfcf;">
+        <div class="col-md-12">
+            <div class="text-center">
+                <h1>欢迎来到专向订阅爬虫</h1>
+            </div>
+        </div>
+    </div>
+    <div class="row" style="background-color:lightgoldenrodyellow;">
+        <div class="col-md-6" style="border-right:1px solid black;">
+            <div class="row">
+                <form role="form" style="width: 96%;margin-left: 2%;">
+                    <fieldset>
+                        <legend style="text-align: center;">用户订阅</legend>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <input class="input-text form-control" id="url" type="text" name="starturl"
+                                       placeholder="初始URL，以http开头"/>
+                                <input class="input-text form-control" id="keyword" type="text" name="keyword"
+                                       placeholder="关键字，只支持一个关键字，可以为空"/>
+                                <input class="input-text form-control" id="titlekey" type="text" name="titlekeyword"
+                                       placeholder="标题关键字，多关键字用英文逗号隔开，可以为空"/>
+                                <input class="input-text form-control" id="token" type="text" name="token"
+                                       placeholder="网页token，爬虫搜索url限定域"/>
+                            </div>
+                        </div>
+                        <div class="row div-button" style="width: 100%;margin-top: 5px;">
+                            <div class="col-md-2"></div>
+                            <input class="col-md-3 btn btn-primary" id="submit" type="button" value="提交"/>
+                            <div class="col-md-2"></div>
+                            <input class="col-md-3 btn btn-primary" id="reset" type="button" value="重置"/>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <fieldset>
+                <legend style="text-align: center">用户操作</legend>
+                <div class="row">
+                    <div class="col-md-12">
+                        <button id="check_sub" class="div-button btn btn-block" type="button">查看订阅消息</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <button id="get_noread" class="div-button btn btn-block" type="button">获取未读消息</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <button id="get_readed" class="div-button btn btn-block" type="button">获取已读消息</button>
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+    <div class="row" id="contain" style="background-color:azure;">
+
+    </div>
+    <div class="row" style="background-color:#afbfcf;">
+        <div class="col-md-12">
+            <div class="row">
+                <div class="col-md-12">
+                    <div style="text-align: center">
+                        <h1>dh爱你的我&copy;版权所有</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
 </body>
 </html>
