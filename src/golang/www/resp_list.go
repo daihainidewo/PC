@@ -103,22 +103,13 @@ func userSub(w http.ResponseWriter, r *http.Request) {
 	keyword := r.Form.Get("keyword")
 	token := r.Form.Get("token")
 	titlekw := r.Form.Get("titlekeyword")
+	callback := r.Form.Get("callback")
 
 	// 获取主站域名
-	bj := 0
-	i := 3
-	for {
-		if i<=0{
-			break
-		}
-		if i >= 0 && suburl[bj] == '/' {
-			i--
-		}
-		bj++
-	}
-	site := suburl[0:bj]
+	urlarr := strings.Split(suburl, "/")
+	site := urlarr[0] + "//" + urlarr[2]
 	if userid == "" || suburl == "" {
-		res := utils.RespJson(utils.INVALID_PARAMS, utils.RespMsg[utils.INVALID_PARAMS], "参数错误")
+		res := utils.RespFormat(utils.INVALID_PARAMS, utils.RespMsg[utils.INVALID_PARAMS], "参数错误",callback)
 		w.Write(res)
 		return
 	}
@@ -135,11 +126,11 @@ func userSub(w http.ResponseWriter, r *http.Request) {
 	err := service.WWWService.SetUserSubMsg(userid, suburl, keyword, site, token, titlekeyword)
 	if err != nil {
 		logger.ErrPrintln(err)
-		res := utils.RespJson(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "系统错误")
+		res := utils.RespFormat(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "系统错误",callback)
 		w.Write(res)
 		return
 	}
-	res := utils.RespJson(utils.SUCCESS, utils.RespMsg[utils.SUCCESS], "设置成功")
+	res := utils.RespFormat(utils.SUCCESS, utils.RespMsg[utils.SUCCESS], "设置成功",callback)
 	w.Write(res)
 }
 
@@ -148,20 +139,21 @@ func userGetSub(w http.ResponseWriter, r *http.Request) {
 	logger.LogPrintln("get /userGetSub")
 	r.ParseForm()
 	userid := r.Form.Get("userid")
+	callback := r.Form.Get("callback")
 	if userid == "" {
-		res := utils.RespJson(utils.INVALID_PARAMS, utils.RespMsg[utils.INVALID_PARAMS], "非法参数")
+		res := utils.RespFormat(utils.INVALID_PARAMS, utils.RespMsg[utils.INVALID_PARAMS], "非法参数", callback)
 		w.Write(res)
 		return
 	}
 	ret, err := service.WWWService.GetUserSubMsg(userid)
 	if err != nil {
 		logger.ErrPrintln(err)
-		res := utils.RespJson(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "系统错误")
+		res := utils.RespFormat(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "系统错误", callback)
 		w.Write(res)
 		return
 	}
 
-	res := utils.RespJson(utils.SUCCESS, utils.RespMsg[utils.SUCCESS], ret)
+	res := utils.RespFormat(utils.SUCCESS, utils.RespMsg[utils.SUCCESS], ret, callback)
 	w.Write(res)
 }
 
@@ -170,20 +162,21 @@ func userReaded(w http.ResponseWriter, r *http.Request) {
 	logger.LogPrintln("get /user/readed")
 	r.ParseForm()
 	userid := r.Form.Get("userid")
+	callback := r.Form.Get("callback")
 	if userid == "" {
-		res := utils.RespJson(utils.INVALID_PARAMS, utils.RespMsg[utils.INVALID_PARAMS], "非法参数")
+		res := utils.RespFormat(utils.INVALID_PARAMS, utils.RespMsg[utils.INVALID_PARAMS], "非法参数", callback)
 		w.Write(res)
 		return
 	}
 	ret, err := service.WWWService.GetUserReaded(userid)
 	if err != nil {
 		logger.ErrPrintln(err)
-		res := utils.RespJson(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "系统错误")
+		res := utils.RespFormat(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "系统错误", callback)
 		w.Write(res)
 		return
 	}
 
-	res := utils.RespJson(utils.SUCCESS, utils.RespMsg[utils.SUCCESS], ret)
+	res := utils.RespFormat(utils.SUCCESS, utils.RespMsg[utils.SUCCESS], ret, callback)
 	w.Write(res)
 }
 
@@ -192,20 +185,21 @@ func userNoread(w http.ResponseWriter, r *http.Request) {
 	logger.LogPrintln("/user/noread")
 	r.ParseForm()
 	userid := r.Form.Get("userid")
+	callback := r.Form.Get("callback")
 	if userid == "" {
-		res := utils.RespJson(utils.INVALID_PARAMS, utils.RespMsg[utils.INVALID_PARAMS], "非法参数")
+		res := utils.RespFormat(utils.INVALID_PARAMS, utils.RespMsg[utils.INVALID_PARAMS], "非法参数", callback)
 		w.Write(res)
 		return
 	}
 	ret, err := service.WWWService.GetUserNoread(userid)
 	if err != nil {
 		logger.ErrPrintln(err)
-		res := utils.RespJson(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "系统错误")
+		res := utils.RespFormat(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "系统错误", callback)
 		w.Write(res)
 		return
 	}
 
-	res := utils.RespJson(utils.SUCCESS, utils.RespMsg[utils.SUCCESS], ret)
+	res := utils.RespFormat(utils.SUCCESS, utils.RespMsg[utils.SUCCESS], ret, callback)
 	w.Write(res)
 }
 

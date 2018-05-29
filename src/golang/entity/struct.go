@@ -2,8 +2,8 @@
 package entity
 
 type PageTitleStruct struct {
-	Title string // 网页标题
-	URL   string // 网页url
+	Title string `json:"title"` // 网页标题
+	URL   string `json:"url"`   // 网页url
 }
 
 type PageSiteTokeStruct struct {
@@ -22,8 +22,8 @@ userid : 用户id
 submsg : 用户订阅的url数组
 */
 type UserSubMsgStruct struct {
-	Userid string            `json:userid`
-	SubMsg []PageTitleStruct `json:"usbmsg"`
+	Userid string            `json:"userid"`
+	SubMsg []PageTitleStruct `json:"submsg"`
 }
 
 type EmptyStruct struct {

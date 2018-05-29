@@ -25,7 +25,7 @@ PageTitleMap为查重url的map，日后会放在redis中
 type PCBreakStruct struct {
 	User2SubStruct
 	PageTitleMap        map[string]string `json:"pagetitlemap"`
-	PageTitleList2Slice []string `json:"pagetitleslice"`
+	PageTitleList2Slice []string          `json:"pagetitleslice"`
 }
 
 /*
