@@ -107,7 +107,7 @@ func (this *WWWServiceImp) GetUserReaded(userid string) (*entity.UserSubMsgStruc
 	if err != nil {
 		return nil, fmt.Errorf("[Service]WWWServiceImp:GetUserReaded:%s", err)
 	}
-	if ret.Userid == "" {
+	if ret != nil && ret.Userid == "" {
 		ret.Userid = userid
 	}
 	return ret, nil
@@ -119,7 +119,7 @@ func (this *WWWServiceImp) GetUserNoread(userid string) (*entity.UserSubMsgStruc
 	if err != nil {
 		return nil, fmt.Errorf("[Service]WWWServiceImp:GetUserNoread:%s", err)
 	}
-	if ret.Userid == "" {
+	if ret != nil && ret.Userid == "" {
 		ret.Userid = userid
 	}
 	return ret, nil
@@ -135,7 +135,7 @@ func (this *WWWServiceImp) SetUserMsg(username, userpasswd string) (string, erro
 	if ok {
 		return "", nil
 	}
-	userid := fmt.Sprintf("%d", time.Now().UnixNano())[:7]
+	userid := fmt.Sprintf("%d", time.Now().UnixNano())[7:17]
 	//fmt.Println(userid)
 	_, err = dao.MysqlWWWDao.InsertUserMsg(userid, username, userpasswd)
 	return userid, err

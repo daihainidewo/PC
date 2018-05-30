@@ -19,6 +19,7 @@ func StartRouter(port int) error {
 	http.HandleFunc("/user/readed", userReaded)
 	http.HandleFunc("/user/noread", userNoread)
 	http.HandleFunc("/user/readmsg", userReadMsg)
+	http.HandleFunc("/user/test", userTest)
 
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 	return err

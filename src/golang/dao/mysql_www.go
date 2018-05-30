@@ -110,7 +110,7 @@ func (this *MysqlWWWClientImp) SelectUserSubMsg(userid string) (*[]entity.User2S
 	ret := new([]entity.User2SubStruct)
 	err = json.Unmarshal(res[0][0].([]byte), ret)
 	if err != nil {
-		return nil, fmt.Errorf("[Dao]MysqlWWWClientImp:SelectUserSubMsg:json.Unmarshal val=%s, error=%s", res[0][0].(string), err)
+		return nil, fmt.Errorf("[Dao]MysqlWWWClientImp:SelectUserSubMsg:json.Unmarshal val=%s, error=%s", string(res[0][0].([]byte)), err)
 	}
 	return ret, nil
 }
@@ -153,7 +153,7 @@ func (this *MysqlWWWClientImp) SelectUserSubMsgReaded(userid string) (*entity.Us
 	}
 	err = json.Unmarshal(res[0][0].([]byte), ret)
 	if err != nil {
-		return nil, fmt.Errorf("[Dao]MysqlWWWClientImp:SelectUserSubMsgReaded:json.Unmarshal val=%s, error=%s", res[0][0].(string), err)
+		return nil, fmt.Errorf("[Dao]MysqlWWWClientImp:SelectUserSubMsgReaded:json.Unmarshal val=%s, error=%s", string(res[0][0].([]byte)), err)
 	}
 	return ret, nil
 }
@@ -171,7 +171,7 @@ func (this *MysqlWWWClientImp) SelectUserSubMsgNoRead(userid string) (*entity.Us
 	}
 	err = json.Unmarshal(res[0][0].([]byte), ret)
 	if err != nil {
-		return nil, fmt.Errorf("[Dao]MysqlWWWClientImp:SelectUserSubMsgNoRead:json.Unmarshal val=%s, error=%s", res[0][0].(string), err)
+		return nil, fmt.Errorf("[Dao]MysqlWWWClientImp:SelectUserSubMsgNoRead:json.Unmarshal val=%s, error=%s", string(res[0][0].([]byte)), err)
 	}
 	return ret, nil
 }
@@ -218,8 +218,8 @@ func (this *MysqlWWWClientImp) SelectUserMsg(userid string) (string, string, err
 	if res == nil {
 		return "", "", nil
 	}
-	username := res[0][0].(string)
-	userpasswd := res[0][1].(string)
+	username := string(res[0][0].([]byte))
+	userpasswd := string(res[0][1].([]byte))
 	return username, userpasswd, nil
 }
 
@@ -247,7 +247,7 @@ func (this *MysqlWWWClientImp) CheckUserNamePasswd(username, userpasswd string) 
 	if res == nil {
 		return "", nil
 	}
-	return res[0][0].(string), nil
+	return string(res[0][0].([]byte)), nil
 }
 
 // 清空用户未读订阅消息

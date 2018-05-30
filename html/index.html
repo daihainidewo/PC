@@ -6,6 +6,7 @@
     <script src="js/jquery.js"></script>
     <link href="css/bootstrap.min.css" rel="stylesheet"/>
     <script src="js/bootstrap.min.js"></script>
+    <script src="js/cookie.js"></script>
     <style>
         .show-border {
             border: solid 1px blueviolet;
@@ -23,85 +24,154 @@
 <body>
 <script>
     $(document).ready(function () {
+        if ($.cookie("username") == "" || $.cookie("userid") == "") {
+            location.href = "./index.html";
+        } else {
+            $("#bj").html($.cookie("username"));
+        }
         $("#reset").click(function () {
             $("#url").val("");
             $("#titlekey").val("");
             $("#token").val("");
             $("#keyword").val("");
-            var n = 1;
-            alert(++n + n++);
-            alert(n);
         });
         $("#submit").click(function () {
-            alert(encodeURIComponent($("#url").val()));
+            var userid = $.cookie("userid");
             if ($("#url").val() == "" || $("#token").val() == "") {
                 alert("请输入必要的输入信息！");
                 return;
             }
             $.ajax({
                 type: "GET",
-                url: "json/test.json?url=" + encodeURIComponent($("#url").val()) + "&keyword=" + $("#keyword").val() + "&titlekey=" + $("#titlekey").val() + "&toen=" + encodeURIComponent($("#token").val()),
-                dataType: "json",
+                url: "http://127.0.0.1:8000/user/sub?userid=" + userid + "&url=" + encodeURIComponent($("#url").val()) + "&keyword=" + $("#keyword").val() + "&titlekey=" + $("#titlekey").val() + "&token=" + encodeURIComponent($("#token").val()),
+                dataType: "jsonp",
+                jsonp: "callback",
                 success: function (data) {
-                    $.each(data["data"], function (i, d) {
-                        alert(d);
-                    })
+                    alert(data["data"]);
                 }
             });
         });
         $("#check_sub").click(function () {
-            var userid = $("#bj").html();
-            var url = "json/usersub.txt?userid=" + userid;
+            var userid = $.cookie("userid");
+            var username = $.cookie("username");
+            var url = "//127.0.0.1:8000/user/getsub?userid=" + userid;
+//            var url = "json/usersub.json";
             $.ajax({
                 type: "GET",
                 url: url,
-                dataType: "html",
+                dataType: "jsonp",
+                jsonp: "callback",
                 success: function (data) {
-                    $("#contain").html(data);
+                    if (data["errno"] == 0) {
+                        if (data["data"] == null) {
+                            var html = '<div class="col-md-12"><h2 style="text-align: center;padding-top: 20px;">用户没有订阅消息</h2>';
+                            $("#contain").html(html);
+                            return;
+                        }
+                        var html = '<div class="col-md-12"><h2 style="text-align: center;padding-top: 20px;">用户订阅消息</h2><table class="table table-striped"><thead><tr><th style="text-align: center;">用户名</th><th style="text-align: center;">用户订阅URL</th><th style="text-align: center;">订阅关键字</th><th style="text-align: center;">订阅搜索标题关键字</th><th style="text-align: center;">搜索网页令牌</th><th style="text-align: center;">选项</th></tr></thead><tbody>';
+                        $.each(data["data"], function (i, d) {
+                            html += "<tr>";
+                            html += '<th style="text-align: center;">' + username + '</th>';
+                            html += '<th style="text-align: center;">' + d["url"] + '</th>';
+                            if (d["keyword"] == "") {
+                                html += '<th style="text-align: center;">无</th>';
+                            } else {
+                                html += '<th style="text-align: center;">' + d["keyword"] + '</th>';
+                            }
+                            if (d["titlekeyword"] == "") {
+                                html += '<th style="text-align: center;">无</th>';
+                            } else {
+                                html += '<th style="text-align: center;">' + d["titlekeyword"] + '</th>';
+                            }
+                            html += '<th style="text-align: center;">' + d["token"] + '</th>';
+                            html += '<td style="text-align: center;"><button id=btn_"' + i + '" class="btn btn-block">删除</button></td>';
+                            html += '</tr>';
+                        })
+                        html += '</tbody></table></div>'
+                        $("#contain").html(html);
+                    } else {
+                        var html = '<div class="col-md-12"><h2 style="text-align: center;padding-top: 20px;">用户没有订阅消息</h2>';
+                        $("#contain").html(html);
+                        return;
+                    }
                 },
                 error: function (errmsg) {
-                    alert(errmsg);
+                    alert("加载失败");
                 }
             })
         });
         $("#get_readed").click(function () {
-            var userid = $("#bj").html();
-            var url = "json/readed.txt?userid=" + userid;
+            var userid = $.cookie("userid");
+            var url = "//127.0.0.1:8000/user/readed?userid=" + userid;
             $.ajax({
                 type: "GET",
                 url: url,
-                dataType: "html",
+                dataType: "jsonp",
+                jsonp: "callback",
                 success: function (data) {
-                    $("#contain").html(data);
+                    if (data["data"] == null) {
+                        var html = '<div class="col-md-12"><h2 style="text-align: center;padding-top: 20px;">用户没有已读消息如下</h2>';
+                        $("#contain").html(html);
+                        return;
+                    }
+                    var html = '<div class="col-md-12"><h2 style="text-align: center;padding-top: 20px;">用户已读消息如下</h2><table class="table table-striped"><tbody>';
+                    $.each(data["data"]["submsg"], function (i, d) {
+                        if (i % 3 == 0) {
+                            html += "<tr>";
+                        }
+                        html += '<td style="text-align: center"><a href="' + d["url"] + '" target="_blank">' + d["title"] + '</a></td>';
+                        if (i % 3 == 2) {
+                            html += "</tr>";
+                        }
+                    })
+                    html += "</tbody></table></div>";
+                    $("#contain").html(html);
                 },
-                error: function (errmsg) {
-                    alert(errmsg);
+                error: function () {
+                    alert("加载失败");
                 }
             })
         });
         $("#get_noread").click(function () {
-            var userid = $("#bj").html();
-            var url = "json/noread.txt?userid=" + userid;
+            var userid = $.cookie("userid");
+
+            var url = "//127.0.0.1:8000/user/readmsg?userid=" + userid;
             $.ajax({
                 type: "GET",
                 url: url,
-                dataType: "html",
+                dataType: "jsonp",
+                jsonp: "callback",
                 success: function (data) {
-                    $("#contain").html(data);
+                    if (data["data"] == null) {
+                        var html = '<div class="col-md-12"><h2 style="text-align: center;padding-top: 20px;">用户没有未读消息如下</h2>';
+                        $("#contain").html(html);
+                        return;
+                    }
+                    var html = '<div class="col-md-12"><h2 style="text-align: center;padding-top: 20px;">用户未读消息如下</h2><table class="table table-striped"><tbody>';
+                    $.each(data["data"]["submsg"], function (i, d) {
+                        if (i % 3 == 0) {
+                            html += "<tr>";
+                        }
+                        html += '<td style="text-align: center"><a href="' + d["url"] + '" target="_blank">' + d["title"] + '</a></td>';
+                        if (i % 3 == 2) {
+                            html += "</tr>";
+                        }
+                    })
+                    html += "</tbody></table></div>";
+                    $("#contain").html(html);
                 },
-                error: function (errmsg) {
-                    alert(errmsg);
+                error: function () {
+                    alert("加载失败");
                 }
             })
         });
     })
 </script>
-<div id="bj" hidden>1234</div>
-<div class="container">
+<div class="container" style="padding-top:20px;">
     <div class="row" style="background-color:#afbfcf;">
         <div class="col-md-12">
             <div class="text-center">
-                <h1>欢迎来到专向订阅爬虫</h1>
+                <h1>欢迎<span id="bj"></span>来到专向订阅爬虫</h1>
             </div>
         </div>
     </div>
