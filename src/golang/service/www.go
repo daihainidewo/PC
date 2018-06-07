@@ -9,6 +9,7 @@ import (
 	"time"
 	"golang/logger"
 	"encoding/json"
+	"strings"
 )
 
 type WWWServiceImp struct{}
@@ -101,6 +102,37 @@ func (this *WWWServiceImp) SetPCBody(userid, suburl, keyword, site, token string
 	return nil
 }
 
+// 删除订阅
+func (this *WWWServiceImp) DelUserSub(userid, suburl, keyword, token string, titlekw []string) (error) {
+	val := new(entity.User2SubStruct)
+	val.TitleKeyWord = titlekw
+	val.Token = token
+	urlarr := strings.Split(suburl, "/")
+	val.Site = urlarr[0] + "//" + urlarr[2]
+	val.URL = suburl
+	val.Keyword = keyword
+	usersub, err := dao.MysqlWWWDao.SelectUserSubMsg(userid)
+	if err != nil {
+		return fmt.Errorf("[Service]WWWServiceImp:DelUserSub:%s", err)
+	}
+	i := false
+	j := 0
+	for j = range *usersub {
+		if utils.User2SubStructIsEqual((*usersub)[j], *val) {
+			i = true
+			break
+		}
+	}
+	if i {
+		*usersub = append((*usersub)[:j], (*usersub)[j+1:]...)
+		_, err = dao.MysqlWWWDao.UpdateUserSubMsg(userid, usersub)
+		if err != nil {
+			return fmt.Errorf("[Service]WWWServiceImp:DelUserSub:%s", err)
+		}
+	}
+	return nil
+}
+
 // 查看用户已读消息
 func (this *WWWServiceImp) GetUserReaded(userid string) (*entity.UserSubMsgStruct, error) {
 	ret, err := dao.MysqlWWWDao.SelectUserSubMsgReaded(userid)
@@ -123,6 +155,19 @@ func (this *WWWServiceImp) GetUserNoread(userid string) (*entity.UserSubMsgStruc
 		ret.Userid = userid
 	}
 	return ret, nil
+}
+
+// 检查用户名是否重复
+func (this *WWWServiceImp) CheckUserName(username string) (string, error) {
+	ok, err := dao.MysqlWWWDao.SelectUserSameName(username)
+	if err != nil {
+		return "", fmt.Errorf("[Service]WWWServiceImp:SetUserMsg:%s", err)
+	}
+	// 表示有相同的用户名
+	if ok {
+		return "", nil
+	}
+	return username, nil
 }
 
 // 设置用户信息
@@ -172,6 +217,9 @@ func (this *WWWServiceImp) GetUserReadMsg(userid string) (*entity.UserSubMsgStru
 	data, err := dao.MysqlWWWDao.SelectUserSubMsgNoRead(userid)
 	if err != nil {
 		return nil, fmt.Errorf("[Service]WWWServiceImp:GetUserReadMsg:%s", err)
+	}
+	if data == nil {
+		return nil, nil
 	}
 	readed, err := dao.MysqlWWWDao.SelectUserSubMsgReaded(userid)
 	if err != nil {

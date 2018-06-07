@@ -44,15 +44,6 @@ func MD5(text string) string {
 	return hex.EncodeToString(ctx.Sum(nil))
 }
 func TestMysqlWWWClientImp_Close(t *testing.T) {
-	start := time.Now().UnixNano()
-	fmt.Println(time.Now().UnixNano())
-	fmt.Println(time.Now())
-	for i := 0; i < 100; i++ {
-		MD5(`func MD5(text string) string{
-	ctx := md5.New()
-	ctx.Write([]byte(text))
-	return hex.EncodeToString(ctx.Sum(nil))
-}`)
-	}
-	fmt.Println(time.Now().UnixNano() - start)
+	a := make([]string, 0)
+	fmt.Println(a == nil, a)
 }

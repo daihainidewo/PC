@@ -14,7 +14,10 @@ func StartRouter(port int) error {
 	http.HandleFunc("/", index)
 	http.HandleFunc("/user/zhuce", userZhuce)
 	http.HandleFunc("/user/login", userLogin)
+	http.HandleFunc("/user/checkname", userCheckName)
 	http.HandleFunc("/user/sub", userSub)
+
+	http.HandleFunc("/user/delsub", userDelSub)
 	http.HandleFunc("/user/getsub", userGetSub)
 	http.HandleFunc("/user/readed", userReaded)
 	http.HandleFunc("/user/noread", userNoread)

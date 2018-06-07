@@ -24,11 +24,41 @@
 <body>
 <script>
     $(document).ready(function () {
-        if ($.cookie("username") == "" || $.cookie("userid") == "") {
-            location.href = "./index.html";
+        if ($.cookie("username") == null) {
+            location.href = "./login.html";
         } else {
             $("#bj").html($.cookie("username"));
         }
+        $(document).on("click", ".btndel", function () {
+            var b = confirm("是否删除当前所选订阅信息");
+            if (!b) {
+                return;
+            }
+            var vid = $(this).attr("id");
+            var sid = vid.substr(4, vid.length);
+            var userid = $.cookie("userid");
+            var kw = $("#del_keyword_" + sid).html();
+            var tkw = $("#del_titlekeyword_" + sid).html();
+            if (kw == "无") {
+                kw = "";
+            }
+            if (tkw == "无") {
+                tkw = "";
+            }
+            $.ajax({
+                type: "GET",
+                url: "http://127.0.0.1:8000/user/delsub?userid=" + userid + "&url=" + encodeURIComponent($("#del_url_" + sid).html()) + "&keyword=" + kw + "&titlekeyword=" + tkw + "&token=" + encodeURIComponent($("#del_token_" + sid).html()),
+                dataType: "jsonp",
+                jsonp: "callback",
+                success: function (data) {
+                    $("#check_sub").trigger("click");
+                    alert("删除成功");
+                },
+                error: function () {
+                    alert("加载失败");
+                }
+            });
+        });
         $("#reset").click(function () {
             $("#url").val("");
             $("#titlekey").val("");
@@ -43,19 +73,23 @@
             }
             $.ajax({
                 type: "GET",
-                url: "http://127.0.0.1:8000/user/sub?userid=" + userid + "&url=" + encodeURIComponent($("#url").val()) + "&keyword=" + $("#keyword").val() + "&titlekey=" + $("#titlekey").val() + "&token=" + encodeURIComponent($("#token").val()),
+                url: "http://127.0.0.1:8000/user/sub?userid=" + userid + "&url=" + encodeURIComponent($("#url").val()) + "&keyword=" + $("#keyword").val() + "&titlekeyword=" + $("#titlekey").val() + "&token=" + encodeURIComponent($("#token").val()),
                 dataType: "jsonp",
                 jsonp: "callback",
                 success: function (data) {
                     alert(data["data"]);
+                },
+                error: function () {
+                    alert("加载失败");
                 }
             });
+
+
         });
         $("#check_sub").click(function () {
             var userid = $.cookie("userid");
             var username = $.cookie("username");
             var url = "//127.0.0.1:8000/user/getsub?userid=" + userid;
-//            var url = "json/usersub.json";
             $.ajax({
                 type: "GET",
                 url: url,
@@ -63,28 +97,39 @@
                 jsonp: "callback",
                 success: function (data) {
                     if (data["errno"] == 0) {
-                        if (data["data"] == null) {
+                        if (data["data"] == null || data["data"].length == 0) {
                             var html = '<div class="col-md-12"><h2 style="text-align: center;padding-top: 20px;">用户没有订阅消息</h2>';
                             $("#contain").html(html);
                             return;
                         }
                         var html = '<div class="col-md-12"><h2 style="text-align: center;padding-top: 20px;">用户订阅消息</h2><table class="table table-striped"><thead><tr><th style="text-align: center;">用户名</th><th style="text-align: center;">用户订阅URL</th><th style="text-align: center;">订阅关键字</th><th style="text-align: center;">订阅搜索标题关键字</th><th style="text-align: center;">搜索网页令牌</th><th style="text-align: center;">选项</th></tr></thead><tbody>';
                         $.each(data["data"], function (i, d) {
-                            html += "<tr>";
-                            html += '<th style="text-align: center;">' + username + '</th>';
-                            html += '<th style="text-align: center;">' + d["url"] + '</th>';
+                            html += "<tr id='tr_'" + i + ">";
+                            html += '<td style="text-align: center;">' + username + '</td>';
+                            html += '<td style="text-align: center;" id="del_url_' + i + '">' + d["url"] + '</td>';
                             if (d["keyword"] == "") {
-                                html += '<th style="text-align: center;">无</th>';
+                                html += '<td style="text-align: center;" id="del_keyword_' + i + '">无</td>';
                             } else {
-                                html += '<th style="text-align: center;">' + d["keyword"] + '</th>';
+                                html += '<td style="text-align: center;" id="del_keyword_' + i + '">';
+                                html += d["keyword"];
+                                html += '</td>';
                             }
-                            if (d["titlekeyword"] == "") {
-                                html += '<th style="text-align: center;">无</th>';
+                            if (d["titlekeyword"].length == 0) {
+                                html += '<td style="text-align: center;" id="del_titlekeyword_' + i + '">无</td>';
                             } else {
-                                html += '<th style="text-align: center;">' + d["titlekeyword"] + '</th>';
+                                html += '<td style="text-align: center;" id="del_titlekeyword_' + i + '">';
+                                var tkey = "";
+                                $.each(d['titlekeyword'], function (i, j) {
+                                    if (i != 0) {
+                                        tkey += ',';
+                                    }
+                                    tkey += j;
+                                });
+                                html += tkey;
+                                html += '</td>';
                             }
-                            html += '<th style="text-align: center;">' + d["token"] + '</th>';
-                            html += '<td style="text-align: center;"><button id=btn_"' + i + '" class="btn btn-block">删除</button></td>';
+                            html += '<td style="text-align: center;" id="del_token_' + i + '">' + d["token"] + '</td>';
+                            html += '<td style="text-align: center;"><button class="btn btndel" id="btn_' + i + '" class="btn btn-block">删除</button></td>';
                             html += '</tr>';
                         })
                         html += '</tbody></table></div>'
@@ -109,8 +154,8 @@
                 dataType: "jsonp",
                 jsonp: "callback",
                 success: function (data) {
-                    if (data["data"] == null) {
-                        var html = '<div class="col-md-12"><h2 style="text-align: center;padding-top: 20px;">用户没有已读消息如下</h2>';
+                    if (data["data"] == null || data["data"]["submsg"] == null || data["data"]["submsg"].length == 0) {
+                        var html = '<div class="col-md-12"><h2 style="text-align: center;padding-top: 20px;">用户没有已读消息</h2>';
                         $("#contain").html(html);
                         return;
                     }
@@ -119,7 +164,7 @@
                         if (i % 3 == 0) {
                             html += "<tr>";
                         }
-                        html += '<td style="text-align: center"><a href="' + d["url"] + '" target="_blank">' + d["title"] + '</a></td>';
+                        html += '<td style="text-align: center" width="33.3%"><a href="' + d["url"] + '" target="_blank">' + d["title"] + '</a></td>';
                         if (i % 3 == 2) {
                             html += "</tr>";
                         }
@@ -142,8 +187,8 @@
                 dataType: "jsonp",
                 jsonp: "callback",
                 success: function (data) {
-                    if (data["data"] == null) {
-                        var html = '<div class="col-md-12"><h2 style="text-align: center;padding-top: 20px;">用户没有未读消息如下</h2>';
+                    if (data["data"] == null || data["data"]["submsg"] == null || data["data"]["submsg"].length == 0) {
+                        var html = '<div class="col-md-12"><h2 style="text-align: center;padding-top: 20px;">用户没有未读消息</h2>';
                         $("#contain").html(html);
                         return;
                     }
@@ -152,7 +197,7 @@
                         if (i % 3 == 0) {
                             html += "<tr>";
                         }
-                        html += '<td style="text-align: center"><a href="' + d["url"] + '" target="_blank">' + d["title"] + '</a></td>';
+                        html += '<td style="text-align: center;" width="33.3%"><a href="' + d["url"] + '" target="_blank">' + d["title"] + '</a></td>';
                         if (i % 3 == 2) {
                             html += "</tr>";
                         }
@@ -167,11 +212,12 @@
         });
     })
 </script>
+<div id="ck" hidden></div>
 <div class="container" style="padding-top:20px;">
     <div class="row" style="background-color:#afbfcf;">
         <div class="col-md-12">
             <div class="text-center">
-                <h1>欢迎<span id="bj"></span>来到专向订阅爬虫</h1>
+                <h1><span id="bj"></span>，欢迎来到专向订阅爬虫</h1>
             </div>
         </div>
     </div>

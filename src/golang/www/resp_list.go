@@ -33,6 +33,7 @@ func userLogin(w http.ResponseWriter, r *http.Request) {
 		w.Write(res)
 		return
 	}
+	logger.LogPrintln(username, password, callback)
 
 	if userid == "" {
 		res := utils.RespFormat(utils.INVALID_PARAMS, utils.RespMsg[utils.INVALID_PARAMS], "密码错误", callback)
@@ -41,6 +42,29 @@ func userLogin(w http.ResponseWriter, r *http.Request) {
 	}
 	res := utils.RespFormat(utils.SUCCESS, utils.RespMsg[utils.SUCCESS], userid, callback)
 	w.Write(res)
+}
+func userCheckName(w http.ResponseWriter, r *http.Request) {
+	defer errorReport("userCheckName", w)
+	logger.LogPrintln("get /user/checkname")
+	r.ParseForm()
+	username := r.Form.Get("username")
+	callback := r.Form.Get("callback")
+	// 存入mysql中
+	userid, err := service.WWWService.CheckUserName(username)
+	if err != nil {
+		logger.ErrPrintln(err)
+		res := utils.RespFormat(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "系统错误", callback)
+		w.Write(res)
+		return
+	}
+	if userid == "" {
+		res := utils.RespFormat(utils.SUCCESS, utils.RespMsg[utils.SUCCESS], "用户名重复", callback)
+		w.Write(res)
+		return
+	}
+	res := utils.RespFormat(utils.SUCCESS, utils.RespMsg[utils.SUCCESS], "用户名可用", callback)
+	w.Write(res)
+	return
 }
 
 func userZhuce(w http.ResponseWriter, r *http.Request) {
@@ -52,7 +76,6 @@ func userZhuce(w http.ResponseWriter, r *http.Request) {
 	passwd := utils.MD5(r.Form.Get("password"))
 	callback := r.Form.Get("callback")
 	// 存入mysql中
-	logger.LogPrintln("username:", username, "    password:", passwd)
 	userid, err := service.WWWService.SetUserMsg(username, passwd)
 	if err != nil {
 		logger.ErrPrintln(err)
@@ -213,6 +236,41 @@ func userReadMsg(w http.ResponseWriter, r *http.Request) {
 	res := utils.RespFormat(utils.SUCCESS, utils.RespMsg[utils.SUCCESS], ret, callback)
 	w.Write(res)
 }
+
+func userDelSub(w http.ResponseWriter, r *http.Request) {
+	logger.LogPrintln("/user/test")
+	r.ParseForm()
+	userid := r.Form.Get("userid")
+	suburl := r.Form.Get("url")
+	keyword := r.Form.Get("keyword")
+	token := r.Form.Get("token")
+	titlekw := r.Form.Get("titlekeyword")
+	callback := r.Form.Get("callback")
+	if userid == "" {
+		res := utils.RespFormat(utils.INVALID_PARAMS, utils.RespMsg[utils.INVALID_PARAMS], "非法参数", callback)
+		w.Write(res)
+		return
+	}
+	titlekey := strings.Split(titlekw, ",")
+	titlekeyword := make([]string, 0)
+	// 去除空值
+	for _, v := range titlekey {
+		if v == "" {
+			continue
+		}
+		titlekeyword = append(titlekeyword, v)
+	}
+	err := service.WWWService.DelUserSub(userid, suburl, keyword, token, titlekeyword)
+	if err != nil {
+		logger.ErrPrintln(err)
+		res := utils.RespFormat(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "系统错误", callback)
+		w.Write(res)
+		return
+	}
+	res := utils.RespFormat(utils.SUCCESS, utils.RespMsg[utils.SUCCESS], "", callback)
+	w.Write(res)
+}
+
 func userTest(w http.ResponseWriter, r *http.Request) {
 	logger.LogPrintln("/user/test")
 	r.ParseForm()

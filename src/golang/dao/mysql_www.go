@@ -244,7 +244,7 @@ func (this *MysqlWWWClientImp) CheckUserNamePasswd(username, userpasswd string) 
 	if err != nil {
 		return "", fmt.Errorf("[Dao]MysqlWWWClientImp:CheckUserNamePasswd:%s", err)
 	}
-	if res == nil {
+	if len(res) == 0 {
 		return "", nil
 	}
 	return string(res[0][0].([]byte)), nil
