@@ -26,6 +26,7 @@ type IWWWService interface {
 	SetUserMsg(username, userpasswd string) (string, error)
 	ChangeUserMsg(userid, username, userpasswd string) error
 	GetUserReadMsg(userid string) (*entity.UserSubMsgStruct, error)
+	ReadUserSubMsg(userid string, val *entity.PageTitleStruct) error
 }
 
 var WWWService IWWWService

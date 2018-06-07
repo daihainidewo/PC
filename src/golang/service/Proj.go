@@ -79,20 +79,21 @@ func (this *ProjServiceImp) SetPCBody(userid string, value *entity.PCBreakStruct
 
 // 设置未读消息
 func (this *ProjServiceImp) SetUserSubMsgNoRead(userid string, val []entity.PageTitleStruct) (int64, error) {
-	oldval, err := dao.MysqlWWWDao.SelectUserSubMsgNoRead(userid)
-	if err != nil {
-		return -1, fmt.Errorf("[Service]ProjServiceImp:SetUserSubMsgNoRead:%s", err)
-	}
-	if oldval == nil {
-		res := new(entity.UserSubMsgStruct)
-		res.SubMsg = val
-		res.Userid = userid
-		return dao.MysqlProjDao.InsertUserSubMsgNoRead(userid, res)
-	}
-	for _, v := range val {
-		oldval.SubMsg = append(oldval.SubMsg, v)
-	}
-	return dao.MysqlProjDao.UpdateUserSubMsgNoRead(userid, oldval)
+	//oldval, err := dao.MysqlWWWDao.SelectUserSubMsgNoRead(userid)
+	//if err != nil {
+	//	return -1, fmt.Errorf("[Service]ProjServiceImp:SetUserSubMsgNoRead:%s", err)
+	//}
+	//if oldval == nil {
+	//	res := new(entity.UserSubMsgStruct)
+	//	res.SubMsg = val
+	//	res.Userid = userid
+	//	return dao.MysqlProjDao.InsertUserSubMsgNoRead(userid, res)
+	//}
+	//for _, v := range val {
+	//	oldval.SubMsg = append(oldval.SubMsg, v)
+	//}
+	//return dao.MysqlProjDao.UpdateUserSubMsgNoRead(userid, oldval)
+	return this.setUserSubMsgRead(userid, val)
 }
 
 // 设置已读消息
@@ -111,6 +112,14 @@ func (this *ProjServiceImp) SetUserSubMsgReaded(userid string, val []entity.Page
 		oldval.SubMsg = append(oldval.SubMsg, v)
 	}
 	return dao.MysqlProjDao.UpdateUserSubMsgReaded(userid, oldval)
+}
+
+// 设置消息
+func (this *ProjServiceImp) setUserSubMsgRead(userid string, val []entity.PageTitleStruct) (int64, error) {
+	value := new(entity.UserSubMsgStruct)
+	value.Userid = userid
+	value.SubMsg = val
+	return dao.MysqlProjDao.InsertUserSubMsg("", value)
 }
 
 func (this *ProjServiceImp) Close() {

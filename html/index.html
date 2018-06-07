@@ -29,6 +29,25 @@
         } else {
             $("#bj").html($.cookie("username"));
         }
+        $(document).on("click", ".urltitle", function () {
+            var url = $(this).attr("href");
+            var title = $(this).html();
+            var id = $(this).attr("id");
+            var ajaxurl = 'http://127.0.0.1:8000/user/read?userid=' + $.cookie("userid") + '&url=' + encodeURIComponent(url) + '&title=' + title;
+            $.ajax({
+                type: "GET",
+                url: ajaxurl,
+                dataType: "jsonp",
+                jsonp: "callback",
+                success: function (data) {
+                    console.log(data["data"]);
+                    $("#" + id).css("color", "red");
+                },
+                error: function () {
+                    alert("加载失败");
+                }
+            })
+        })
         $(document).on("click", ".btndel", function () {
             var b = confirm("是否删除当前所选订阅信息");
             if (!b) {
@@ -179,8 +198,7 @@
         });
         $("#get_noread").click(function () {
             var userid = $.cookie("userid");
-
-            var url = "//127.0.0.1:8000/user/readmsg?userid=" + userid;
+            var url = "//127.0.0.1:8000/user/noread?userid=" + userid;
             $.ajax({
                 type: "GET",
                 url: url,
@@ -197,7 +215,7 @@
                         if (i % 3 == 0) {
                             html += "<tr>";
                         }
-                        html += '<td style="text-align: center;" width="33.3%"><a href="' + d["url"] + '" target="_blank">' + d["title"] + '</a></td>';
+                        html += '<td style="text-align: center;" width="33.3%"><a class="urltitle" id="urltitle_' + i + '" href="' + d["url"] + '" target="_blank">' + d["title"] + '</a></td>';
                         if (i % 3 == 2) {
                             html += "</tr>";
                         }

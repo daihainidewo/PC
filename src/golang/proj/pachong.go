@@ -237,7 +237,7 @@ func (this *PC) CtrlPC() {
 	go func() {
 		for {
 			time.Sleep(1 * time.Second)
-			logger.LogPrintln("the next pc")
+			logger.LogPrintln("the next crawler")
 			utils.UserSubUrl = make([]entity.PageTitleStruct, 0)
 			// 准备下一个爬虫
 			userid, pcbs, err := service.ProjService.StartNextPC()
@@ -252,7 +252,7 @@ func (this *PC) CtrlPC() {
 				logger.LogPrintln("userid is null")
 				continue
 			}
-			logger.LogPrintln("PC ing ...")
+			logger.LogPrintln("Crawling ...")
 			this.startPC(pcbs.URL, pcbs.Keyword, pcbs.Site, pcbs.Token, pcbs.TitleKeyWord)
 			_, err = service.ProjService.SetUserSubMsgNoRead(userid, utils.UserSubUrl)
 			if err != nil {
@@ -268,15 +268,11 @@ func (this *PC) CtrlPC() {
 				pcbs.PageTitleList2Slice[i] = string(t)
 				iter = iter.Next()
 			}
-			//logger.Println()
 			err = service.ProjService.SetPCBody(userid, pcbs)
 			if err != nil {
 				logger.ErrPrintln(err)
 				continue
 			}
-			//logger.Println("map len", len(pcbs.PageTitleMap))
-			//logger.Println("sleep...")
-			//time.Sleep(1 * time.Minute)
 		}
 	}()
 	<-ch

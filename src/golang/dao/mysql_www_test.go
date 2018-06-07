@@ -47,3 +47,20 @@ func TestMysqlWWWClientImp_Close(t *testing.T) {
 	a := make([]string, 0)
 	fmt.Println(a == nil, a)
 }
+
+func TestMysqlWWWClientImp_SelectUserSubMsgNoread(t *testing.T) {
+	startTest()
+	userid := "3512762103"
+	ret, err := MysqlWWWDao.SelectUserSubMsgNoread(userid)
+	fmt.Println(ret, err)
+}
+
+func TestMysqlWWWClientImp_UpdateUserSubMsgRead(t *testing.T) {
+	startTest()
+	userid := "1234"
+	submsg := new(entity.PageTitleStruct)
+	submsg.Title = "biaoti"
+	submsg.URL = "http://www.baidu.com"
+	res, err := MysqlWWWDao.UpdateUserSubMsgRead(userid, submsg)
+	fmt.Println(res, err)
+}

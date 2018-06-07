@@ -20,29 +20,34 @@
             });
             // 检查用户名是否重复
             $("#username").blur(function () {
+                if ($("#username").val() == "") {
+                    alert("请输入用户名");
+                    return
+                }
                 $.ajax({
                     type: "GET",
-                    url: "",
-                    success: function () {
-
+                    url: "http://127.0.0.1:8000/user/checkname?username=" + $("#username").val(),
+                    dataType: "jsonp",
+                    jsonp: "callback",
+                    success: function (data) {
+                        if (data["data"] == "用户名重复") {
+                            $("#nametext").html("<strong style='color: red'>用户名已存在</strong>");
+                        } else if (data["data"] == "用户名可用") {
+                            $("#nametext").html("<strong style='color: green'>用户名可用</strong>");
+                        } else {
+                            alert("系统错误");
+                        }
                     },
                     error: function () {
-
+                        alert("加载失败");
                     },
                 });
             });
             // 提交表单
             $("#submit").click(function () {
-                if ($("#username").val() == "") {
-                    alert("请输入用户名");
-                    return
-                }
-                if ($("#passwd").val() != $("#rpasswd").val()) {
-                    $("#repwdtext").html("<strong style='color: red'>两次密码输入不一致</strong>");
-                    return
-                } else {
-                    $("#repwdtext").html("");
-                }
+                $("#username").trigger("blur");
+                $("#passwd").trigger("blur");
+                $("#rpasswd").trigger("blur");
                 $.ajax({
                     type: "GET",
                     url: "http://127.0.0.1:8000/user/zhuce?" + "username=" + $("#username").val() + "&password=" + $("#passwd").val(),
@@ -55,7 +60,7 @@
                         }
                     },
                     error: function () {
-
+                        alert("加载失败");
                     },
                 });
             });
@@ -63,12 +68,21 @@
             $("#rpasswd").blur(function () {
                 if ($("#passwd").val() != $("#rpasswd").val()) {
                     $("#repwdtext").html("<strong style='color: red'>两次密码输入不一致</strong>");
+                    return
                 } else {
                     $("#repwdtext").html("");
                 }
             });
-        })
-        ;
+            // 检查密码是否符合要求
+            $("#passwd").blur(function () {
+                var re = /^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{8,16}$/;
+                if (!re.test($("#passwd").val())) {
+                    $("#pwdtext").html("<strong style='color: red'>密码必须包含字母和数字，长度8到16</strong>");
+                } else {
+                    $("#pwdtext").html("");
+                }
+            });
+        });
     </script>
 </head>
 <body>
@@ -94,21 +108,21 @@
                 <div class="col-md-4">
                     <input id="username" type="text" class="form-control" name="username"/>
                 </div>
-                <div class="col-md-2"></div>
+                <div class="col-md-6" id="nametext"></div>
             </div>
             <div class="row">
                 <div class="col-md-2">输入密码：</div>
                 <div class="col-md-4">
                     <input id="passwd" type="password" class="form-control" name="password"/>
                 </div>
-                <div class="col-md-2"></div>
+                <div class="col-md-6" id="pwdtext"></div>
             </div>
             <div class="row">
                 <div class="col-md-2">再次输入密码：</div>
                 <div class="col-md-4">
                     <input id="rpasswd" type="password" class="form-control"/>
                 </div>
-                <div class="col-md-4" id="repwdtext"></div>
+                <div class="col-md-6" id="repwdtext"></div>
             </div>
             <div class="row">
                 <div style="height:20px;"></div>

@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 	"golang/logger"
+	"golang/entity"
 )
 
 func indexNoLogin(w http.ResponseWriter, r *http.Request) {
@@ -277,4 +278,28 @@ func userTest(w http.ResponseWriter, r *http.Request) {
 	callback := r.Form.Get("callback")
 	logger.LogPrintln(callback)
 	w.Write(utils.RespFormat(utils.SUCCESS, utils.RespMsg[utils.SUCCESS], "测试成功", callback))
+}
+func userRead(w http.ResponseWriter, r *http.Request) {
+	logger.LogPrintln("/user/read")
+	r.ParseForm()
+	callback := r.Form.Get("callback")
+	userid := r.Form.Get("userid")
+	title := r.Form.Get("title")
+	url := r.Form.Get("url")
+	if userid == "" || url == "" {
+		res := utils.RespFormat(utils.INVALID_PARAMS, utils.RespMsg[utils.INVALID_PARAMS], "非法参数", callback)
+		w.Write(res)
+		return
+	}
+	val := new(entity.PageTitleStruct)
+	val.URL = url
+	val.Title = title
+	err := service.WWWService.ReadUserSubMsg(userid, val)
+	if err != nil {
+		logger.ErrPrintln(err)
+		res := utils.RespFormat(utils.SYSTEM_ERROR, utils.RespMsg[utils.SYSTEM_ERROR], "系统错误", callback)
+		w.Write(res)
+		return
+	}
+	w.Write(utils.RespFormat(utils.SUCCESS, utils.RespMsg[utils.SUCCESS], "阅读成功", callback))
 }

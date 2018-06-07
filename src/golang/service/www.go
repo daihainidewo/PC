@@ -135,7 +135,8 @@ func (this *WWWServiceImp) DelUserSub(userid, suburl, keyword, token string, tit
 
 // 查看用户已读消息
 func (this *WWWServiceImp) GetUserReaded(userid string) (*entity.UserSubMsgStruct, error) {
-	ret, err := dao.MysqlWWWDao.SelectUserSubMsgReaded(userid)
+	// ret, err := dao.MysqlWWWDao.SelectUserSubMsgReaded(userid)
+	ret, err := dao.MysqlWWWDao.SelectUserSubMsgreaded(userid)
 	if err != nil {
 		return nil, fmt.Errorf("[Service]WWWServiceImp:GetUserReaded:%s", err)
 	}
@@ -147,7 +148,8 @@ func (this *WWWServiceImp) GetUserReaded(userid string) (*entity.UserSubMsgStruc
 
 // 查看用户未读消息
 func (this *WWWServiceImp) GetUserNoread(userid string) (*entity.UserSubMsgStruct, error) {
-	ret, err := dao.MysqlWWWDao.SelectUserSubMsgNoRead(userid)
+	// ret, err := dao.MysqlWWWDao.SelectUserSubMsgNoRead(userid)
+	ret, err := dao.MysqlWWWDao.SelectUserSubMsgNoread(userid)
 	if err != nil {
 		return nil, fmt.Errorf("[Service]WWWServiceImp:GetUserNoread:%s", err)
 	}
@@ -213,6 +215,7 @@ func (this *WWWServiceImp) CheckUser(username string, userpasswd string) (string
 	return dao.MysqlWWWDao.CheckUserNamePasswd(username, userpasswd)
 }
 
+// 用户阅读消息，读后将消息标记为已读
 func (this *WWWServiceImp) GetUserReadMsg(userid string) (*entity.UserSubMsgStruct, error) {
 	data, err := dao.MysqlWWWDao.SelectUserSubMsgNoRead(userid)
 	if err != nil {
@@ -241,6 +244,12 @@ func (this *WWWServiceImp) GetUserReadMsg(userid string) (*entity.UserSubMsgStru
 		return nil, fmt.Errorf("[Service]WWWServiceImp:GetUserReadMsg:%s", err)
 	}
 	return data, nil
+}
+
+// 将用户未读消息标记为已读
+func (this *WWWServiceImp) ReadUserSubMsg(userid string, val *entity.PageTitleStruct) error {
+	_, err := dao.MysqlWWWDao.UpdateUserSubMsgRead(userid, val)
+	return err
 }
 
 func (this *WWWServiceImp) Close() {

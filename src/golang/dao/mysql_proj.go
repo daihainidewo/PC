@@ -8,6 +8,7 @@ import (
 	_ "github.com/Go-SQL-Driver/MySQL"
 	"golang/entity"
 	"golang/logger"
+	"regexp"
 )
 
 type MysqlProjClientImp struct {
@@ -174,4 +175,27 @@ func (this *MysqlProjClientImp) DeletePCBody(userid_timest string) (int64, error
 // 关闭mysql
 func (this *MysqlProjClientImp) Close() {
 	this.client.Close()
+}
+
+// 新版本，将数据存取改成新的表
+// 向表中添加获取的订阅消息
+func (this *MysqlProjClientImp) InsertUserSubMsg(suburl string, value *entity.UserSubMsgStruct) (int64, error) {
+	if value.SubMsg == nil || len(value.SubMsg) == 0 {
+		return 0, nil
+	}
+	sql := `insert into user_sub_msg (user_sub_msg_user_id, user_sub_msg_user_msg, user_sub_msg_user_sub) values `
+	re1, _ := regexp.Compile(`'`)
+	re2, _ := regexp.Compile(`"`)
+	for _, d := range value.SubMsg {
+		d.Title = re1.ReplaceAllString(d.Title, `-`)
+		d.Title = re2.ReplaceAllString(d.Title, `-`)
+		s, _ := json.Marshal(d)
+		sql = sql + `('` + value.Userid + `','` + string(s) + `','` + suburl + `'),`
+	}
+	sql = sql[:len(sql)-1]
+	res, err := this.doSQL(sql)
+	if err != nil {
+		return -1, fmt.Errorf("[Dao]MysqlProjClientImp:InsertUserSubMsg:%s", err)
+	}
+	return res.RowsAffected()
 }

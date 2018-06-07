@@ -9,6 +9,7 @@ import (
 	"golang/entity"
 	"strings"
 	"golang/logger"
+	"time"
 )
 
 type MysqlWWWClientImp struct {
@@ -277,4 +278,53 @@ func (this *MysqlWWWClientImp) UpdateUserSubMsgReaded(val *entity.UserSubMsgStru
 // 关闭mysql
 func (this *MysqlWWWClientImp) Close() {
 	this.client.Close()
+}
+
+// 新版本，将数据存取改成新的表
+// 获取用户已读消息
+func (this *MysqlWWWClientImp) SelectUserSubMsgNoread(userid string) (*entity.UserSubMsgStruct, error) {
+	ret := new(entity.UserSubMsgStruct)
+	ret.Userid = userid
+	sql := `select user_sub_msg_user_msg from user_sub_msg where user_sub_msg_user_id=? and user_sub_msg_is_read=false;`
+	res, err := this.doQuery(sql, userid)
+	if err != nil {
+		return nil, fmt.Errorf("[Dao]MysqlWWWClientImp:SelectUserSubMsgNoread:%s", err)
+	}
+	if len(res) == 0 {
+		return nil, nil
+	}
+	tmp := new(entity.PageTitleStruct)
+	for _, d := range res {
+		json.Unmarshal(d[0].([]byte), tmp)
+		ret.SubMsg = append(ret.SubMsg, *tmp)
+	}
+	return ret, nil
+}
+func (this *MysqlWWWClientImp) SelectUserSubMsgreaded(userid string) (*entity.UserSubMsgStruct, error) {
+	ret := new(entity.UserSubMsgStruct)
+	ret.Userid = userid
+	sql := `select user_sub_msg_user_msg from user_sub_msg where user_sub_msg_user_id=? and user_sub_msg_is_read=true order by cast(user_sub_msg_time as datetime) desc;`
+	res, err := this.doQuery(sql, userid)
+	if err != nil {
+		return nil, fmt.Errorf("[Dao]MysqlWWWClientImp:SelectUserSubMsgreaded:%s", err)
+	}
+	if len(res) == 0 {
+		return nil, nil
+	}
+	tmp := new(entity.PageTitleStruct)
+	for _, d := range res {
+		json.Unmarshal(d[0].([]byte), tmp)
+		ret.SubMsg = append(ret.SubMsg, *tmp)
+	}
+	return ret, nil
+}
+func (this *MysqlWWWClientImp) UpdateUserSubMsgRead(userid string, submsg *entity.PageTitleStruct) (int64, error) {
+	tn := time.Now().Format("2006-01-02 15:04:05")
+	sql := `update user_sub_msg set user_sub_msg_is_read=true, user_sub_msg_time='` + tn + `' where user_sub_msg_user_id=? and user_sub_msg_user_msg=?`
+	suburl, _ := json.Marshal(submsg)
+	res, err := this.doSQL(sql, userid, string(suburl))
+	if err != nil {
+		return -1, fmt.Errorf("[Dao]MysqlWWWClientImp:UpdateUserSubMsgRead:%s", err)
+	}
+	return res.RowsAffected()
 }
